@@ -80,6 +80,14 @@
     cursor:pointer;background:var(--surface);color:var(--text);
     border:1px solid var(--control-border);border-radius:6px}
   .cred-more:hover{border-color:var(--accent);color:var(--accent)}
+  /* 용어 사전: 읽기용 목록이라 카드보다 사전 판형이 낫다. */
+  .gloss{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1px;
+    background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .gterm{background:var(--surface);padding:16px 18px}
+  .gterm dt{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;margin-bottom:6px}
+  .gterm dt b{font-size:15px;font-weight:600;letter-spacing:-.01em}
+  .gterm dt em{font-style:normal;font-size:13px;color:var(--muted)}
+  .gterm dd{margin:0;font-size:14px;line-height:1.7;color:var(--muted)}
   .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
   .searchbox{flex:1 1 260px;min-width:200px;display:flex;align-items:center;gap:10px}
   .searchbox label{font-size:14px;color:var(--muted);white-space:nowrap}
@@ -180,6 +188,7 @@
     <button class="mode" type="button" data-mode="projects" aria-pressed="true">프로젝트</button>
     <button class="mode" type="button" data-mode="docs" aria-pressed="false">문서 전체</button>
     <button class="mode" type="button" data-mode="credentials" aria-pressed="false" id="mode-creds" hidden>학력 · 자격 · 교육</button>
+    <button class="mode" type="button" data-mode="glossary" aria-pressed="false" id="mode-gloss" hidden>용어 사전</button>
   </div>
 
   <div class="controls">
@@ -197,6 +206,7 @@
   <div class="plist" id="plist"></div>
   <div class="grid" id="grid" hidden></div>
   <div class="creds" id="creds" hidden></div>
+  <div class="gloss" id="gloss" hidden></div>
 
   <footer id="footer"></footer>
 </div>
@@ -219,6 +229,8 @@
   var projects = M.projects || [];
   var creds = document.getElementById('creds');
   var trackbar = document.getElementById('trackbar');
+  var gloss = document.getElementById('gloss');
+  var GLOSS = (site.glossary && site.glossary.terms) || [];
   var CRED = site.credentials || {};
   // groups 는 배열이라 표시 순서가 보존된다. 객체 키였다면 manifest 생성 때 정렬돼 뒤섞인다.
   var CRED_GROUPS = (CRED.groups || []).filter(function (g) {
@@ -330,6 +342,7 @@
 
   // credentials 가 site.json 에 없으면 탭 자체를 두지 않는다.
   document.getElementById('mode-creds').hidden = CRED_GROUPS.length === 0;
+  document.getElementById('mode-gloss').hidden = GLOSS.length === 0;
   Array.prototype.forEach.call(document.querySelectorAll('.mode'), function (b) {
     b.onclick = function () { state.mode = b.dataset.mode; state.cat = 'all'; render(); };
   });
@@ -433,20 +446,30 @@
     tabs.hidden = state.mode !== 'docs';
 
     var isCred = state.mode === 'credentials';
-    var showTags = !isCred && tagNames.length > 0 && (state.mode === 'docs' || state.tagsOpen || !!state.tag);
+    var isGloss = state.mode === 'glossary';
+    var showTags = !isCred && !isGloss && tagNames.length > 0 && (state.mode === 'docs' || state.tagsOpen || !!state.tag);
     tagbar.hidden = !showTags;
     tagtoggle.hidden = state.mode !== 'projects' || tagNames.length === 0;
     tagtoggle.setAttribute('aria-expanded', String(showTags));
     tagtoggle.textContent = (showTags ? '기술 태그 접기' : '기술 태그 보기') + ' (' + tagNames.length + ')';
     // 학력·자격·교육은 목록이 짧고 고정이라 검색·태그 필터를 걸지 않는다.
-    document.querySelector('.controls').hidden = isCred;
+    document.querySelector('.controls').hidden = isCred || isGloss;
     trackbar.hidden = state.mode !== 'projects' || trackbar.childElementCount === 0;
     Array.prototype.forEach.call(trackbar.querySelectorAll('button'), function (b) {
       b.setAttribute('aria-pressed', String((b.dataset.track || null) === (state.track || null)));
     });
     creds.hidden = !isCred;
+    gloss.hidden = !isGloss;
 
-    if (isCred) {
+    if (isGloss) {
+      plist.hidden = true; grid.hidden = true;
+      document.getElementById('count').textContent = '용어 ' + GLOSS.length + '개';
+      gloss.innerHTML = GLOSS.map(function (t) {
+        return '<dl class="gterm"><dt><b>' + esc(t.t) + '</b>' +
+          (t.e ? '<em>' + esc(t.e) + '</em>' : '') + '</dt>' +
+          '<dd>' + esc(t.d) + '</dd></dl>';
+      }).join('');
+    } else if (isCred) {
       plist.hidden = true; grid.hidden = true;
       var total = CRED_GROUPS.reduce(function (n, g) { return n + g.items.length; }, 0);
       document.getElementById('count').textContent = '항목 ' + total + '건';

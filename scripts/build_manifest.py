@@ -78,6 +78,19 @@ def load_site():
             n = sum(len(g["items"]) for g in groups)
             print("    credentials: %d개 묶음, 항목 %d건" % (len(groups), n))
     site["credentials"] = creds or {}
+
+    # glossary: 문서에 나오는 용어를 이 분야 밖의 사람도 읽을 수 있게 푼 것.
+    gl = site.get("glossary")
+    if gl is not None:
+        terms = gl.get("terms") if isinstance(gl, dict) else None
+        if not (isinstance(terms, list)
+                and all(isinstance(t, dict) and t.get("t") and t.get("d") for t in terms)):
+            print("[!] site.json 의 glossary 형식이 맞지 않습니다. "
+                  "{terms: [{t, e, d}]} 여야 합니다. 무시합니다.", file=sys.stderr)
+            gl = None
+        else:
+            print("    glossary: 용어 %d개" % len(terms))
+    site["glossary"] = gl or {}
     return site
 
 
@@ -342,6 +355,8 @@ def main():
         site_out["org_order"] = SITE["org_order"]
     if SITE.get("credentials"):
         site_out["credentials"] = SITE["credentials"]
+    if SITE.get("glossary"):
+        site_out["glossary"] = SITE["glossary"]
     manifest = {
         "site": site_out,
         "sections": [{"key": k, "label": l, "description": d} for k, l, d in SECTIONS],
