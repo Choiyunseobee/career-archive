@@ -1,0 +1,25 @@
+# ============================================================
+# 이 저장소는 공개(public)입니다.
+# 허용 목록 방식입니다. 여기 없는 확장자는 아예 커밋되지 않습니다.
+# 사내 화면 캡처, 설계 PDF, 엑셀 원본이 실수로 올라가는 것을 막기 위함입니다.
+# ============================================================
+*
+!*/
+!.gitignore
+!.gitattributes
+!.nojekyll
+!*.md
+!index.html
+!viewer.html
+!manifest.json
+!manifest.js
+!site.json
+!scripts/build_manifest.py
+!assets/*.svg
+
+# 허용 목록보다 우선하는 금지 항목
+config.env
+.automation_team*.env
+*.token
+.env
+_staging/
