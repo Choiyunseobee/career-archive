@@ -71,6 +71,11 @@
   article td.num,article th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
   article blockquote{margin:0 0 16px;padding:4px 16px;border-left:3px solid var(--border);color:var(--text)}
   article blockquote p:last-child{margin-bottom:0}
+  /* '쉽게 말하면' 은 비전공자용 요약이라 본문 인용과 구분해 눈에 먼저 들어오게 한다. */
+  article blockquote.plain{background:var(--accent-soft);border-left-color:var(--accent);
+    border-radius:0 8px 8px 0;padding:14px 18px;margin-bottom:24px}
+  article blockquote.plain > p:first-child{font-size:14px;font-weight:600;color:var(--accent);
+    margin-bottom:8px}
   article img{max-width:100%;border-radius:8px}
   article hr{border:0;border-top:1px solid var(--border);margin:32px 0}
   .fallback{font-size:15px;color:var(--muted)}
@@ -174,6 +179,11 @@
       if (!(window.marked && window.DOMPurify)) { showRaw(body); return; }
       marked.setOptions({ breaks: true, gfm: true });
       doc.innerHTML = DOMPurify.sanitize(marked.parse(body));
+      // 첫 줄이 '쉽게 말하면' 인 인용문에 표시를 붙인다. 마크다운에는 클래스를 쓸 수 없다.
+      Array.prototype.forEach.call(doc.querySelectorAll('blockquote'), function (bq) {
+        var head = bq.querySelector('p');
+        if (head && head.textContent.trim() === '쉽게 말하면') bq.classList.add('plain');
+      });
       decorate();
     })
     .catch(function () {
