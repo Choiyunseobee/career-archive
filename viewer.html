@@ -4,43 +4,97 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>문서 보기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <style>
-  :root{--bg:#f7f7f5;--surface:#fff;--border:#e3e2dd;--text:#1c1b19;--muted:#6f6d67;
-    --accent:#b05730;--accent-soft:#f3e6df}
-  @media (prefers-color-scheme:dark){:root{--bg:#191816;--surface:#232220;--border:#35332f;
-    --text:#ecebe7;--muted:#9b978e;--accent:#e08b5f;--accent-soft:#33261f}}
+  /* 토큰은 index.html 과 같다. 규칙은 DESIGN.md. */
+  :root{
+    color-scheme:light;
+    --bg:#FAFAFA; --surface:#FFFFFF; --surface2:#F4F4F5; --border:#D4D4D8; --control-border:#85858F;
+    --text:#18181B; --muted:#62626B;
+    --accent:#1D4ED8; --accent-hover:#1E40AF; --accent-soft:#EFF6FF; --on-accent:#FFFFFF;
+    --font-sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+    --font-mono:ui-monospace,"SFMono-Regular",Consolas,"Liberation Mono","IBM Plex Sans KR",monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      color-scheme:dark;
+      --bg:#111113; --surface:#18181B; --surface2:#242427; --border:#3F3F46; --control-border:#71717A;
+      --text:#F4F4F5; --muted:#A1A1AA;
+      --accent:#93C5FD; --accent-hover:#BFDBFE; --accent-soft:#172554; --on-accent:#111113;
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --bg:#111113; --surface:#18181B; --surface2:#242427; --border:#3F3F46; --control-border:#71717A;
+    --text:#F4F4F5; --muted:#A1A1AA;
+    --accent:#93C5FD; --accent-hover:#BFDBFE; --accent-soft:#172554; --on-accent:#111113;
+  }
+
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);line-height:1.75;
-    font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-    -webkit-font-smoothing:antialiased}
-  .wrap{max-width:760px;margin:0 auto;padding:32px 24px 96px}
-  .back{display:inline-block;margin-bottom:24px;font-size:13px;color:var(--muted);text-decoration:none}
-  .back:hover{color:var(--accent)}
-  .meta{font-size:12px;color:var(--muted);margin-bottom:20px;font-variant-numeric:tabular-nums}
-  article{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:36px 40px}
-  article h1{font-size:26px;letter-spacing:-.02em;margin:0 0 20px}
-  article h2{font-size:19px;margin:36px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border)}
-  article h3{font-size:16px;margin:26px 0 8px}
-  article p,article li{font-size:15px}
-  article code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px;
-    background:var(--accent-soft);color:var(--accent);padding:1px 5px;border-radius:4px}
-  article pre{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;overflow-x:auto}
-  article pre code{background:none;color:var(--text);padding:0}
-  article table{border-collapse:collapse;width:100%;font-size:14px;display:block;overflow-x:auto}
-  article th,article td{border:1px solid var(--border);padding:8px 12px;text-align:left}
-  article th{background:var(--bg);font-weight:600}
-  article blockquote{margin:16px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted)}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-sans);font-size:17px;line-height:1.8;
+    word-break:keep-all;overflow-wrap:anywhere;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  /* 본문 프레임(카드)을 없애 읽기 폭을 확보한다. 표·코드만 구획한다. */
+  .wrap{max-width:768px;margin:0 auto;padding:32px 24px 96px}
+  .top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 16px;align-items:baseline;font-size:14px;color:var(--muted)}
+  .back{text-decoration:none;font-weight:500}
+  .back:hover{text-decoration:underline}
+  .ctx b{color:var(--text);font-weight:500}
+  .meta{display:flex;flex-wrap:wrap;gap:4px 16px;margin:20px 0 0;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .meta b{color:var(--text);font-weight:500}
+  .toc{margin:24px 0 0;padding:14px 16px;background:var(--surface2);border-radius:8px;font-size:14px}
+  .toc b{display:block;font-weight:600;margin-bottom:4px}
+  .toc ol{margin:0;padding-left:20px;columns:2;column-gap:24px}
+  .toc li{margin:2px 0;break-inside:avoid}
+  .toc a{text-decoration:none}
+  .toc a:hover{text-decoration:underline}
+
+  article{margin-top:24px;max-width:720px}
+  article h1{font-size:32px;font-weight:700;letter-spacing:-.02em;line-height:1.35;margin:0 0 20px;text-wrap:balance}
+  article h2{font-size:24px;font-weight:600;letter-spacing:-.01em;line-height:1.45;margin:40px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+  article h3{font-size:19px;font-weight:600;letter-spacing:-.01em;line-height:1.45;margin:24px 0 12px}
+  article p{margin:0 0 16px}
+  article ul,article ol{margin:0 0 16px;padding-left:24px}
+  article li{margin:4px 0}
+  article code{font-family:var(--font-mono);font-size:14px;background:var(--surface2);color:var(--text);padding:1px 6px;border-radius:4px}
+  article pre{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;
+    font-size:14px;line-height:1.6;margin:0 0 16px}
+  article pre code{background:none;padding:0;font-size:inherit}
+  .tablewrap{overflow-x:auto;margin:0 0 16px}
+  article table{border-collapse:collapse;width:100%;font-size:15px;line-height:1.6}
+  article th,article td{padding:10px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--border)}
+  article th{background:var(--surface2);font-weight:600}
+  article td.num,article th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  article blockquote{margin:0 0 16px;padding:4px 16px;border-left:3px solid var(--border);color:var(--text)}
+  article blockquote p:last-child{margin-bottom:0}
   article img{max-width:100%;border-radius:8px}
-  article a{color:var(--accent)}
-  .fallback{font-size:14px;color:var(--muted)}
-  .raw{white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px}
+  article hr{border:0;border-top:1px solid var(--border);margin:32px 0}
+  .fallback{font-size:15px;color:var(--muted)}
+  .raw{white-space:pre-wrap;font-family:var(--font-mono);font-size:14px;line-height:1.6}
+  footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)}
+  footer a{text-decoration:none;font-weight:500}
+  [hidden]{display:none!important}
+  @media (max-width:640px){
+    .wrap{padding:24px 16px 64px}
+    article h1{font-size:26px}
+    .toc ol{columns:1}
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <a class="back" href="index.html">← 목록으로</a>
+  <div class="top">
+    <a class="back" href="index.html">← 목록으로</a>
+    <span class="ctx" id="ctx"></span>
+  </div>
   <div class="meta" id="meta"></div>
+  <nav class="toc" id="toc" hidden aria-label="목차"></nav>
   <article id="doc"><p class="fallback">불러오는 중…</p></article>
+  <footer><a href="index.html">← 목록으로</a></footer>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
@@ -50,6 +104,8 @@
 (function () {
   var doc = document.getElementById('doc');
   var meta = document.getElementById('meta');
+  var ctx = document.getElementById('ctx');
+  var toc = document.getElementById('toc');
   var path = new URLSearchParams(location.search).get('p');
   var M = window.ARCHIVE_MANIFEST || {};
 
@@ -60,6 +116,20 @@
     p.textContent = msg;
     doc.appendChild(p);
   }
+  function showRaw(text) {
+    // sanitizer 가 없으면 위험할 수 있는 HTML 을 DOM 에 한 번도 넣지 않는다. 원문 그대로만 보여준다.
+    doc.textContent = '';
+    var d = document.createElement('div');
+    d.className = 'raw'; d.textContent = text;
+    doc.appendChild(d);
+  }
+  function metaItem(label, value) {
+    if (!value) return null;
+    var s = document.createElement('span');
+    var b = document.createElement('b'); b.textContent = label + ' ';
+    s.appendChild(b); s.appendChild(document.createTextNode(value));
+    return s;
+  }
 
   // 목록(manifest)에 있는 문서만 연다. 외부 주소나 상위 경로는 아예 시도하지 않는다.
   var entry = null;
@@ -69,44 +139,90 @@
   }
   if (!entry) {
     fail('목록에 없는 문서입니다. 목록에서 다시 선택해 주세요.');
-  } else {
-    document.title = entry.title;
-    meta.textContent = [entry.category_label, entry.date, entry.project].filter(Boolean).join('  ·  ');
+    return;
+  }
 
-    fetch(entry.path)
-      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
-      .then(function (text) {
-        var body = text.replace(/^---[ \t]*\r?\n[\s\S]*?\r?\n---[ \t]*\r?\n/, '');
-        if (window.marked) {
-          marked.setOptions({ breaks: true, gfm: true });
-          var html = marked.parse(body);
-          doc.innerHTML = window.DOMPurify ? DOMPurify.sanitize(html) : html;
-          if (!window.DOMPurify) {
-            // 위생 처리 라이브러리를 못 불러온 경우, 원문 그대로만 보여준다.
-            doc.textContent = '';
-            var pre = document.createElement('div');
-            pre.className = 'raw'; pre.textContent = body;
-            doc.appendChild(pre);
-          }
-        } else {
-          doc.textContent = '';
-          var d = document.createElement('div');
-          d.className = 'raw'; d.textContent = body;
-          doc.appendChild(d);
+  document.title = entry.title;
+
+  // 이 문서가 속한 프로젝트 (본체이거나 관련 문서로 묶인 것)
+  var project = null;
+  (M.projects || []).forEach(function (p) {
+    if (project) return;
+    var mine = p.main === entry.path || (p.docs || []).some(function (d) { return d.path === entry.path; });
+    if (mine) project = p;
+  });
+  if (project) {
+    var parts = [project.org, project.name].filter(Boolean);
+    if (parts.length) {
+      var lbl = document.createElement('span'); lbl.textContent = '프로젝트 ';
+      var b = document.createElement('b'); b.textContent = parts.join(' · ');
+      ctx.appendChild(lbl); ctx.appendChild(b);
+    }
+  }
+  [metaItem('분류', entry.category_label), metaItem('문서 날짜', entry.date),
+   metaItem('기간', project && project.period), metaItem('역할', project && project.role),
+   metaItem('단계', project && project.stage)]
+    .forEach(function (n) { if (n) meta.appendChild(n); });
+
+  // 파일명에 # 나 ? 가 있어도 URL 조각으로 해석되지 않게 세그먼트별로 인코딩한다.
+  var fileUrl = entry.path.split('/').map(encodeURIComponent).join('/');
+
+  fetch(fileUrl)
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+    .then(function (text) {
+      var body = text.replace(/^---[ \t]*\r?\n[\s\S]*?\r?\n---[ \t]*\r?\n/, '');
+      if (!(window.marked && window.DOMPurify)) { showRaw(body); return; }
+      marked.setOptions({ breaks: true, gfm: true });
+      doc.innerHTML = DOMPurify.sanitize(marked.parse(body));
+      decorate();
+    })
+    .catch(function () {
+      doc.textContent = '';
+      var p = document.createElement('p');
+      p.className = 'fallback';
+      p.textContent = '문서를 불러오지 못했습니다. GitHub Pages 에서는 정상 동작합니다. ' +
+        '로컬에서 볼 때는 이 폴더에서 python3 -m http.server 8000 을 실행한 뒤 ' +
+        'http://localhost:8000 으로 여세요. 원본 파일: ';
+      var a = document.createElement('a');
+      a.href = fileUrl; a.textContent = entry.path;
+      p.appendChild(a);
+      doc.appendChild(p);
+    });
+
+  // 렌더 뒤 손질: 표 감싸기와 숫자 열 오른쪽 정렬, H2 목차
+  function decorate() {
+    Array.prototype.forEach.call(doc.querySelectorAll('table'), function (t) {
+      var w = document.createElement('div'); w.className = 'tablewrap';
+      t.parentNode.insertBefore(w, t); w.appendChild(t);
+      // 한 열의 데이터 셀이 모두 수치(숫자, %, 단위, 화살표, 대시)이면 오른쪽 정렬
+      var rows = Array.prototype.slice.call(t.querySelectorAll('tbody tr'));
+      if (!rows.length) return;
+      var cols = rows[0].children.length;
+      for (var c = 0; c < cols; c++) {
+        var numeric = rows.every(function (r) {
+          var cell = r.children[c]; if (!cell) return false;
+          var s = cell.textContent.trim();
+          if (s === '' || s === '—' || s === '-') return true;
+          return /\d/.test(s) && /^[\d.,\s%→~\-–+±°a-zA-Z\/()]+$/.test(s) && !/[a-zA-Z]{6,}/.test(s);
+        });
+        if (numeric) {
+          rows.forEach(function (r) { if (r.children[c]) r.children[c].classList.add('num'); });
+          var th = t.querySelector('thead tr'); if (th && th.children[c]) th.children[c].classList.add('num');
         }
-      })
-      .catch(function () {
-        doc.textContent = '';
-        var p = document.createElement('p');
-        p.className = 'fallback';
-        p.textContent = '문서를 불러오지 못했습니다. GitHub Pages 에서는 정상 동작합니다. ' +
-          '로컬에서 볼 때는 이 폴더에서 python3 -m http.server 8000 을 실행한 뒤 ' +
-          'http://localhost:8000 으로 여세요. 원본 파일: ';
-        var a = document.createElement('a');
-        a.href = entry.path; a.textContent = entry.path;
-        p.appendChild(a);
-        doc.appendChild(p);
+      }
+    });
+    var h2s = Array.prototype.slice.call(doc.querselectorAll ? [] : doc.querySelectorAll('h2'));
+    if (h2s.length >= 3) {
+      var ol = document.createElement('ol');
+      h2s.forEach(function (h, i) {
+        var id = 'sec-' + (i + 1);
+        h.id = id;
+        var li = document.createElement('li'); var a = document.createElement('a');
+        a.href = '#' + id; a.textContent = h.textContent; li.appendChild(a); ol.appendChild(li);
       });
+      var b = document.createElement('b'); b.textContent = '목차';
+      toc.appendChild(b); toc.appendChild(ol); toc.hidden = false;
+    }
   }
 })();
 </script>

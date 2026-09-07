@@ -90,8 +90,16 @@ def parse_frontmatter(text, rel):
                 i += 1
             meta[key] = items if items else ""
             continue
-        val = val.strip('"').strip("'")
-        if val.startswith("[") and val.endswith("]"):
+        # 따옴표로 감싼 값은 문자열이다. 벗기기 전에 판단해야 "[ROS2]" 같은 제목이 목록이 되지 않는다 (C11).
+        if len(val) >= 2 and val[0] == val[-1] and val[0] in ('"', "'"):
+            if val[0] == '"':
+                try:
+                    meta[key] = json.loads(val)          # JSON 호환 escape 지원
+                except ValueError:
+                    meta[key] = val[1:-1].replace('\\"', '"')
+            else:
+                meta[key] = val[1:-1].replace("''", "'")  # YAML 작은따옴표 escape
+        elif val.startswith("[") and val.endswith("]"):
             meta[key] = [v.strip().strip('"').strip("'") for v in val[1:-1].split(",") if v.strip()]
         else:
             meta[key] = val
@@ -145,7 +153,9 @@ def guess_date(meta, path, body, rel):
             d = valid_date("-".join(m.groups()))
             if d:
                 return d
-    return datetime.fromtimestamp(os.path.getmtime(path)).strftime("%Y-%m-%d")
+    # 파일 수정 시각은 PC 마다 다르다(clone 시각). 두 PC 가 다른 목록을 만들게 되므로 쓰지 않는다 (C15).
+    print(f"    [!] date 가 없습니다. 프론트매터에 date: YYYY-MM-DD 를 적으세요: {rel}", file=sys.stderr)
+    return ""
 
 
 def read_text(path, rel):
@@ -201,18 +211,21 @@ def collect():
 
 
 def build_projects(entries):
-    """project 값으로 문서를 묶는다. projects/ 안의 문서가 그 프로젝트의 본체가 된다."""
-    buckets = {}
-    for e in entries:
-        key = e["project"] or (e["title"] if e["category"] == "projects" else "")
-        if not key:
-            continue
-        b = buckets.setdefault(key, {
-            "name": key, "org": "", "period": "", "role": "", "stage": "",
+    """project 값으로 문서를 묶는다. projects/ 안의 문서가 그 프로젝트의 본체가 된다.
+    소속(org)이 다르면 이름이 같아도 다른 프로젝트다 (학부 'Robot' 과 회사 'Robot', C12)."""
+    def name_of(e):
+        return e["project"] or (e["title"] if e["category"] == "projects" else "")
+
+    def new_bucket(name):
+        return {
+            "name": name, "org": "", "period": "", "role": "", "stage": "",
             "headline": "", "summary": "", "stack": [], "tags": [],
             "main": None, "docs": [], "dates": [],
-        })
-        b["dates"].append(e["date"])
+        }
+
+    def add(b, e):
+        if e["date"]:                      # 날짜 없는 문서는 기간 계산에 넣지 않는다 (C15)
+            b["dates"].append(e["date"])
         if e["org"] and not b["org"]:
             b["org"] = e["org"]
         for f in ("stack", "tags"):
@@ -229,6 +242,27 @@ def build_projects(entries):
                 "title": e["title"], "path": e["path"],
                 "date": e["date"], "category_label": e["category_label"],
             })
+
+    buckets = {}
+    # 1차: org 가 있는 문서는 (org, 이름) 으로 묶는다.
+    for e in entries:
+        n = name_of(e)
+        if n and e["org"]:
+            add(buckets.setdefault((e["org"], n), new_bucket(n)), e)
+    # 2차: org 가 없는 문서는 같은 이름의 프로젝트가 정확히 하나일 때만 거기에 붙인다.
+    for e in entries:
+        n = name_of(e)
+        if not n or e["org"]:
+            continue
+        cands = [k for k in buckets if k[1] == n]
+        if len(cands) == 1:
+            key = cands[0]
+        else:
+            if len(cands) > 1:
+                print(f"    [!] 같은 이름의 프로젝트가 소속별로 여러 개라 연결할 수 없습니다. org: 를 적으세요: {e['path']}",
+                      file=sys.stderr)
+            key = ("", n)
+        add(buckets.setdefault(key, new_bucket(n)), e)
 
     out = []
     for b in buckets.values():
