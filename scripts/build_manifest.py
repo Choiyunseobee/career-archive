@@ -48,6 +48,36 @@ def load_site():
     keys = site.get("sections") or [s[0] for s in DEFAULT_SECTIONS]
     known = {k: (l, d) for k, l, d in DEFAULT_SECTIONS}
     site["_sections"] = [(k, known.get(k, (k, ""))[0], known.get(k, (k, ""))[1]) for k in keys]
+
+    # org_order: 소속 표시 순서. 없으면 문서 날짜순으로 밀려서
+    # 오늘 쓴 학부 문서가 재직 경력보다 위로 온다.
+    order = site.get("org_order")
+    if order is not None and not (isinstance(order, list)
+                                  and all(isinstance(o, str) for o in order)):
+        print("[!] site.json 의 org_order 는 문자열 배열이어야 합니다. 무시합니다.",
+              file=sys.stderr)
+        order = None
+    site["org_order"] = order or []
+
+    # credentials: 학력·자격·교육·수상. 프로젝트 카드로 만들면 목록이 과밀해진다.
+    creds = site.get("credentials")
+    if creds is not None:
+        groups = creds.get("groups") if isinstance(creds, dict) else None
+        ok = isinstance(groups, list) and all(
+            isinstance(g, dict) and isinstance(g.get("label"), str)
+            and isinstance(g.get("items"), list)
+            and all(isinstance(i, dict) and i.get("name") for i in g["items"])
+            for g in groups)
+        if not ok:
+            # 조용히 기본값으로 넘어가면 화면에서 통째로 사라진 것을 눈치채기 어렵다.
+            print("[!] site.json 의 credentials 형식이 맞지 않습니다. "
+                  "{groups: [{label, items: [{name, ...}]}]} 여야 합니다. 무시합니다.",
+                  file=sys.stderr)
+            creds = None
+        else:
+            n = sum(len(g["items"]) for g in groups)
+            print("    credentials: %d개 묶음, 항목 %d건" % (len(groups), n))
+    site["credentials"] = creds or {}
     return site
 
 
@@ -275,7 +305,18 @@ def build_projects(entries):
         b["doc_count"] = len(b["docs"]) + (1 if b["main"] else 0)
         del b["dates"]
         out.append(b)
-    out.sort(key=lambda p: p["last_activity"], reverse=True)
+
+    # 1순위 소속 순서, 2순위 최근 활동. org_order 에 없는 소속은 뒤로 보낸다.
+    order = SITE.get("org_order") or []
+    rank = {name: i for i, name in enumerate(order)}
+    unknown = sorted({b["org"] for b in out if b["org"] and b["org"] not in rank})
+    if unknown:
+        print("    [!] site.json 의 org_order 에 없는 소속이 있어 뒤로 정렬합니다: "
+              + ", ".join(unknown), file=sys.stderr)
+    for b in out:
+        b["org_rank"] = rank.get(b["org"], len(order) + 1)
+    out.sort(key=lambda p: (p["org_rank"], [-int(x) for x in p["last_activity"].split("-")]
+                            if p["last_activity"] else [0, 0, 0]))
     return out
 
 
@@ -293,6 +334,10 @@ def main():
     # 랜딩 히어로 (site.json 의 hero: tagline, metrics[], contact{}). 없으면 페이지도 그리지 않는다.
     if isinstance(SITE.get("hero"), dict):
         site_out["hero"] = SITE["hero"]
+    if SITE.get("org_order"):
+        site_out["org_order"] = SITE["org_order"]
+    if SITE.get("credentials"):
+        site_out["credentials"] = SITE["credentials"]
     manifest = {
         "site": site_out,
         "sections": [{"key": k, "label": l, "description": d} for k, l, d in SECTIONS],

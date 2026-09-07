@@ -62,6 +62,24 @@
   .mode{min-height:44px;padding:8px 14px;font-size:15px;cursor:pointer;background:none;border:none;
     color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
   .mode[aria-pressed="true"]{color:var(--text);font-weight:600;border-bottom-color:var(--accent)}
+  /* 학력·자격·교육·수상 목록. 프로젝트 카드로 만들면 목록이 과밀해져 따로 둔다. */
+  .creds{display:flex;flex-direction:column;gap:40px}
+  .creds h3{font-size:18px;font-weight:600;line-height:1.5;letter-spacing:-.01em;margin:0 0 12px}
+  .creds h3 span{font-size:13px;font-weight:400;color:var(--muted);margin-left:8px}
+  .cred-note{font-size:13px;line-height:1.6;color:var(--muted);margin:0 0 24px;max-width:44rem}
+  .cred-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--border)}
+  .cred-list li{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline;
+    padding:12px 0;border-bottom:1px solid var(--border)}
+  .cred-name{font-size:15px;font-weight:500;flex:1 1 18rem;min-width:0}
+  .cred-org{font-size:13px;color:var(--muted);flex:0 1 auto}
+  .cred-when{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;
+    margin-left:auto;white-space:nowrap}
+  .cred-detail{flex:1 1 100%;font-size:13px;line-height:1.6;color:var(--muted)}
+  .cred-name a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+  .cred-more{min-height:44px;margin-top:8px;padding:8px 14px;font-size:14px;font-weight:500;
+    cursor:pointer;background:var(--surface);color:var(--text);
+    border:1px solid var(--control-border);border-radius:6px}
+  .cred-more:hover{border-color:var(--accent);color:var(--accent)}
   .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
   .searchbox{flex:1 1 260px;min-width:200px;display:flex;align-items:center;gap:10px}
   .searchbox label{font-size:14px;color:var(--muted);white-space:nowrap}
@@ -152,6 +170,7 @@
   <div class="modes">
     <button class="mode" type="button" data-mode="projects" aria-pressed="true">프로젝트</button>
     <button class="mode" type="button" data-mode="docs" aria-pressed="false">문서 전체</button>
+    <button class="mode" type="button" data-mode="credentials" aria-pressed="false" id="mode-creds" hidden>학력 · 자격 · 교육</button>
   </div>
 
   <div class="controls">
@@ -167,6 +186,7 @@
 
   <div class="plist" id="plist"></div>
   <div class="grid" id="grid" hidden></div>
+  <div class="creds" id="creds" hidden></div>
 
   <footer id="footer"></footer>
 </div>
@@ -187,6 +207,14 @@
   var site = M.site || {};
   var entries = M.entries || [];
   var projects = M.projects || [];
+  var creds = document.getElementById('creds');
+  var CRED = site.credentials || {};
+  // groups 는 배열이라 표시 순서가 보존된다. 객체 키였다면 manifest 생성 때 정렬돼 뒤섞인다.
+  var CRED_GROUPS = (CRED.groups || []).filter(function (g) {
+    return g && g.label && Array.isArray(g.items) && g.items.length;
+  });
+  var credsOpen = Object.create(null);
+  var CRED_FOLD = 8;   // 이보다 많으면 접고 펼치기 버튼을 준다
   var sections = M.sections || [];
   var state = { mode: 'projects', cat: 'all', tag: null, q: '', tagsOpen: false };
 
@@ -268,6 +296,8 @@
   document.getElementById('search').oninput = function (ev) {
     state.q = ev.target.value.trim().toLowerCase(); render();
   };
+  // credentials 가 site.json 에 없으면 탭 자체를 두지 않는다.
+  document.getElementById('mode-creds').hidden = CRED_GROUPS.length === 0;
   Array.prototype.forEach.call(document.querySelectorAll('.mode'), function (b) {
     b.onclick = function () { state.mode = b.dataset.mode; state.cat = 'all'; render(); };
   });
@@ -323,6 +353,40 @@
     '</div>';
   }
 
+  function credRow(it) {
+    var when = it.date || it.period || '';
+    var name = esc(it.name || '');
+    if (it.project) name = '<a href="' + href(it.project) + '">' + name + '</a>';
+    return '<li>' +
+      '<span class="cred-name">' + name + '</span>' +
+      (it.org ? '<span class="cred-org">' + esc(it.org) + '</span>' : '') +
+      (it.hours ? '<span class="cred-org">' + esc(it.hours) + '</span>' : '') +
+      (when ? '<span class="cred-when">' + esc(when) + '</span>' : '') +
+      (it.detail ? '<span class="cred-detail">' + esc(it.detail) + '</span>' : '') +
+      '</li>';
+  }
+
+  function renderCredentials() {
+    var html = CRED.note ? '<p class="cred-note">' + esc(CRED.note) + '</p>' : '';
+    html += CRED_GROUPS.map(function (g) {
+      var k = g.label, items = g.items;
+      var open = credsOpen[k] || items.length <= CRED_FOLD;
+      var shown = open ? items : items.slice(0, CRED_FOLD);
+      return '<section>' +
+        '<h3>' + esc(k) + '<span>' + items.length + '건</span></h3>' +
+        '<ul class="cred-list">' + shown.map(credRow).join('') + '</ul>' +
+        (items.length > CRED_FOLD
+          ? '<button class="cred-more" type="button" data-cred="' + esc(k) + '" aria-expanded="' + open + '">' +
+            (open ? '접기' : '나머지 ' + (items.length - CRED_FOLD) + '건 더 보기') + '</button>'
+          : '') +
+        '</section>';
+    }).join('');
+    creds.innerHTML = html;
+    Array.prototype.forEach.call(creds.querySelectorAll('[data-cred]'), function (b) {
+      b.onclick = function () { credsOpen[b.dataset.cred] = !credsOpen[b.dataset.cred]; render(); };
+    });
+  }
+
   function render() {
     Array.prototype.forEach.call(document.querySelectorAll('.mode'), function (b) {
       b.setAttribute('aria-pressed', b.dataset.mode === state.mode);
@@ -335,13 +399,22 @@
     });
     tabs.hidden = state.mode !== 'docs';
 
-    var showTags = tagNames.length > 0 && (state.mode === 'docs' || state.tagsOpen || !!state.tag);
+    var isCred = state.mode === 'credentials';
+    var showTags = !isCred && tagNames.length > 0 && (state.mode === 'docs' || state.tagsOpen || !!state.tag);
     tagbar.hidden = !showTags;
     tagtoggle.hidden = state.mode !== 'projects' || tagNames.length === 0;
     tagtoggle.setAttribute('aria-expanded', String(showTags));
     tagtoggle.textContent = (showTags ? '기술 태그 접기' : '기술 태그 보기') + ' (' + tagNames.length + ')';
+    // 학력·자격·교육은 목록이 짧고 고정이라 검색·태그 필터를 걸지 않는다.
+    document.querySelector('.controls').hidden = isCred;
+    creds.hidden = !isCred;
 
-    if (state.mode === 'projects') {
+    if (isCred) {
+      plist.hidden = true; grid.hidden = true;
+      var total = CRED_GROUPS.reduce(function (n, g) { return n + g.items.length; }, 0);
+      document.getElementById('count').textContent = '항목 ' + total + '건';
+      renderCredentials();
+    } else if (state.mode === 'projects') {
       grid.hidden = true; plist.hidden = false;
       var list = projects.filter(matchProject);
       document.getElementById('count').textContent =
