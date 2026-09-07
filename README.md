@@ -27,18 +27,20 @@ bash ~/personal_git_package/promote.sh <같은 경로> --as <같은 경로> --pu
 
 ## 첫 화면 (랜딩 히어로)
 
-`site.json` 의 `hero` 를 고치면 첫 화면의 한 줄 소개, 대표 지표(최대 4개), 연락처가 바뀝니다.
+`site.json` 의 `hero` 를 고치면 첫 화면의 한 줄 소개, 대표 지표(화면은 최대 2개), 연락처가 바뀝니다.
 `hero` 를 지우면 히어로도 사라집니다. 최종 업데이트 날짜는 가장 최근 문서의 `date` 에서 자동으로 나옵니다.
 
 ```json
 "hero": {
   "tagline": "한 줄 정체성",
-  "metrics": [ { "value": "97.8%", "label": "픽 성공률", "note": "샘플 500회" } ],
+  "metrics": [ { "value": "<전> → <후>", "label": "<지표명>", "note": "<측정 조건과 범위>" } ],
   "contact": { "github": "https://github.com/Choiyunseobee", "email": "" }
 }
 ```
 
-고친 뒤 `python3 scripts/build_manifest.py` 를 다시 실행해야 반영됩니다. 지표 값도 승격 시 민감어 검사를 받습니다.
+고친 뒤 `python3 scripts/build_manifest.py` 를 다시 실행해야 반영됩니다.
+**지표는 근거가 확인된 값만 넣습니다.** 예시 값이나 미측정 추정치를 대표 성과 자리에 두지 않습니다.
+민감어 검사는 `promote.sh` 로 승격할 때 동작하며, `site.json` 을 직접 고칠 때는 사람이 확인해야 합니다.
 
 ## 주의
 
@@ -47,5 +49,5 @@ bash ~/personal_git_package/promote.sh <같은 경로> --as <같은 경로> --pu
 > 한 번 공개된 것은 완전히 지울 수 없습니다.
 > 승격 전 `work-journal/guides/PROMOTION_CHECKLIST.md` 를 통과시키세요.
 
-`.gitignore` 는 허용 목록 방식입니다. `.md` 와 사이트 파일 외에는 커밋되지 않습니다.
-이미지가 필요하면 `assets/*.svg` 만 허용되며, 사진은 EXIF 를 지운 뒤 `git add -f` 로 개별 추가하세요.
+`.gitignore` 는 허용 목록 방식입니다. 허용 경로는 `README.md`, `DESIGN.md`, `projects/*.md`, `notes/*.md`, 사이트 파일, `assets/*.svg` 뿐입니다.
+증명서·성적표·자격증 스캔·사진 등 증빙 원본은 이 저장소에 올리지 않습니다. 개인 PC와 `work-journal` 에만 둡니다.

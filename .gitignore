@@ -8,7 +8,10 @@
 !.gitignore
 !.gitattributes
 !.nojekyll
-!*.md
+!README.md
+!DESIGN.md
+!projects/*.md
+!notes/*.md
 !index.html
 !viewer.html
 !manifest.json

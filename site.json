@@ -5,10 +5,6 @@
   "sections": ["projects", "notes"],
   "hero": {
     "tagline": "카메라 인식부터 로봇 제어까지 하나의 파이프라인으로 연결하고, 시뮬레이션이 아닌 실제 장비에서 성능을 검증합니다.",
-    "metrics": [
-      { "value": "91.2% → 97.8%", "label": "픽 성공률", "note": "예시 데이터 · 비주얼 서보잉 기반 정렬 제어 · 샘플 500회, A타입 워크, 링조명 60%" },
-      { "value": "12.4s → 9.1s", "label": "사이클타임", "note": "예시 데이터 · 같은 문서 · 투입~배출 구간, 컨베이어 정지" }
-    ],
     "contact": {
       "github": "https://github.com/Choiyunseobee",
       "email": ""
