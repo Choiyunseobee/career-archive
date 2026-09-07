@@ -8,6 +8,7 @@ window.ARCHIVE_MANIFEST = {
       "date": "2026-09-03",
       "group": "",
       "headline": "(예시) 픽 성공률 91.2% → 97.8%, 사이클타임 12.4s → 9.1s",
+      "org": "재직 · 로봇 SW 기업",
       "path": "projects/visual-servoing.md",
       "period": "2026.03 ~ 2026.09",
       "project": "비주얼 서보잉 하이브리드 제어",
@@ -31,6 +32,7 @@ window.ARCHIVE_MANIFEST = {
       "date": "2026-06-20",
       "group": "",
       "headline": "(예시) 수작업 공정 1인 상시 투입 → 무인 운전 구간 확보",
+      "org": "재직 · 로봇 SW 기업",
       "path": "projects/dental-postprocess.md",
       "period": "2025.11 ~ 2026.06",
       "project": "치과 교정장치 후처리 자동화",
@@ -56,6 +58,7 @@ window.ARCHIVE_MANIFEST = {
       "last_activity": "2026-09-03",
       "main": "projects/visual-servoing.md",
       "name": "비주얼 서보잉 하이브리드 제어",
+      "org": "재직 · 로봇 SW 기업",
       "period": "2026.03 ~ 2026.09",
       "role": "비전 파이프라인 및 제어 로직 설계",
       "stack": [
@@ -77,6 +80,7 @@ window.ARCHIVE_MANIFEST = {
       "last_activity": "2026-06-20",
       "main": "projects/dental-postprocess.md",
       "name": "치과 교정장치 후처리 자동화",
+      "org": "재직 · 로봇 SW 기업",
       "period": "2025.11 ~ 2026.06",
       "role": "자동화 셀 소프트웨어 설계",
       "stack": [
@@ -104,8 +108,33 @@ window.ARCHIVE_MANIFEST = {
     }
   ],
   "site": {
-    "subtitle": "로봇 SW 엔지니어로 해온 일을 프로젝트 단위로 정리합니다.",
+    "hero": {
+      "contact": {
+        "email": "",
+        "github": "https://github.com/Choiyunseobee"
+      },
+      "metrics": [
+        {
+          "label": "픽 성공률",
+          "note": "예시 값 · 실제 수치로 교체",
+          "value": "97.8%"
+        },
+        {
+          "label": "사이클타임",
+          "note": "예시 값 · 실제 수치로 교체",
+          "value": "9.1s"
+        },
+        {
+          "label": "정렬 반복 오차",
+          "note": "예시 값 · 실제 수치로 교체",
+          "value": "0.2mm"
+        }
+      ],
+      "tagline": "로봇 SW 엔지니어. 카메라가 본 것을 로봇의 움직임으로 바꾸는 비전·제어 파이프라인을 설계하고, 시뮬레이션이 아닌 실기에서 검증합니다."
+    },
+    "subtitle": "학부 프로젝트부터 현장실습, 재직 중 과제까지 해온 일을 프로젝트 단위로 정리합니다.",
     "title": "최윤섭 · 경험 아카이브",
+    "updated": "2026-09-03",
     "visibility": "public"
   }
 };

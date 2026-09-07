@@ -186,6 +186,8 @@ def collect():
                     "group": "" if group == "." else group,
                     "date": guess_date(meta, full, body, rel),
                     "project": str(meta.get("project") or "").strip(),
+                    # 소속·시기 (예: "학부 졸업 프로젝트", "현장실습 · 제조 자동화 기업", "재직 · 로봇 SW 기업")
+                    "org": str(meta.get("org") or "").strip(),
                     "role": str(meta.get("role") or "").strip(),
                     "period": str(meta.get("period") or "").strip(),
                     "stage": str(meta.get("stage") or "").strip(),
@@ -206,18 +208,20 @@ def build_projects(entries):
         if not key:
             continue
         b = buckets.setdefault(key, {
-            "name": key, "period": "", "role": "", "stage": "",
+            "name": key, "org": "", "period": "", "role": "", "stage": "",
             "headline": "", "summary": "", "stack": [], "tags": [],
             "main": None, "docs": [], "dates": [],
         })
         b["dates"].append(e["date"])
+        if e["org"] and not b["org"]:
+            b["org"] = e["org"]
         for f in ("stack", "tags"):
             for v in e[f]:
                 if v not in b[f]:
                     b[f].append(v)
         if e["category"] == "projects" and b["main"] is None:
             b["main"] = e["path"]
-            for f in ("period", "role", "stage", "headline", "summary"):
+            for f in ("org", "period", "role", "stage", "headline", "summary"):
                 if e[f]:
                     b[f] = e[f]
         else:
@@ -244,22 +248,30 @@ def build_projects(entries):
 def main():
     entries = collect()
     projects = build_projects(entries)
+    site_out = {
+        "title": SITE.get("title", ""),
+        "subtitle": SITE.get("subtitle", ""),
+        "visibility": SITE.get("visibility", "private"),
+        # 최종 업데이트 = 가장 최근 문서의 date. 생성 시각 대신 문서 날짜를 쓰므로
+        # PC 두 대가 같은 문서 집합에서 같은 값을 만들어 충돌하지 않는다.
+        "updated": entries[0]["date"] if entries else "",
+    }
+    # 랜딩 히어로 (site.json 의 hero: tagline, metrics[], contact{}). 없으면 페이지도 그리지 않는다.
+    if isinstance(SITE.get("hero"), dict):
+        site_out["hero"] = SITE["hero"]
     manifest = {
-        "site": {
-            "title": SITE.get("title", ""),
-            "subtitle": SITE.get("subtitle", ""),
-            "visibility": SITE.get("visibility", "private"),
-        },
+        "site": site_out,
         "sections": [{"key": k, "label": l, "description": d} for k, l, d in SECTIONS],
         "count": len(entries),
         "projects": projects,
         "entries": entries,
     }
     # generated_at 은 넣지 않는다. 매번 바뀌면 PC 두 대 사이에서 계속 충돌한다.
-    with open(os.path.join(ROOT, "manifest.json"), "w", encoding="utf-8") as f:
+    # newline="\n": 윈도우에서 CRLF 로 써지면 git 이 매번 정규화 경고를 낸다.
+    with open(os.path.join(ROOT, "manifest.json"), "w", encoding="utf-8", newline="\n") as f:
         json.dump(manifest, f, ensure_ascii=False, indent=2, sort_keys=True)
         f.write("\n")
-    with open(os.path.join(ROOT, "manifest.js"), "w", encoding="utf-8") as f:
+    with open(os.path.join(ROOT, "manifest.js"), "w", encoding="utf-8", newline="\n") as f:
         f.write("// 자동 생성 파일. scripts/build_manifest.py 로 갱신하세요.\n")
         f.write("window.ARCHIVE_MANIFEST = ")
         json.dump(manifest, f, ensure_ascii=False, indent=2, sort_keys=True)

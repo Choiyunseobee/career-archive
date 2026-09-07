@@ -26,6 +26,19 @@
   .badge.private{background:var(--accent-soft);color:var(--accent)}
   .badge.public{background:transparent;color:var(--muted);border:1px solid var(--border)}
 
+  /* 랜딩 히어로: site.json 의 hero 가 있을 때만 그려진다 */
+  .hero{margin-top:22px;padding:20px 0 4px;border-top:1px solid var(--border)}
+  .hero-tag{font-size:17px;line-height:1.6;margin:0;max-width:60ch;text-wrap:balance}
+  .hero-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 24px;margin-top:18px}
+  .metric{padding:8px 0 8px 14px;border-left:2px solid var(--accent-soft)}
+  .metric .v{font-size:26px;font-weight:700;letter-spacing:-.02em;color:var(--accent);
+    font-variant-numeric:tabular-nums;line-height:1.15}
+  .metric .l{font-size:13px;color:var(--text);margin-top:4px}
+  .metric .n{font-size:11px;color:var(--muted);margin-top:2px}
+  .hero-foot{display:flex;flex-wrap:wrap;gap:6px 20px;align-items:center;margin-top:16px;font-size:13px;color:var(--muted)}
+  .hero-foot a{color:var(--accent);text-decoration:none;font-weight:600}
+  .hero-foot a:hover,.hero-foot a:focus-visible{text-decoration:underline}
+
   .modes{display:flex;gap:4px;margin:28px 0 18px;border-bottom:1px solid var(--border)}
   .mode{padding:10px 18px;font-size:14px;font-family:inherit;cursor:pointer;background:none;border:none;
     color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
@@ -47,6 +60,10 @@
 
   /* 프로젝트 뷰 */
   .plist{display:flex;flex-direction:column;gap:16px}
+  .ogroup{display:flex;gap:8px;align-items:baseline;margin:14px 0 -6px;font-size:13px;font-weight:600;
+    color:var(--muted);letter-spacing:.03em}
+  .ogroup:first-child{margin-top:0}
+  .ogroup span{font-weight:400}
   .pcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;
     padding:22px 24px;box-shadow:var(--shadow)}
   .phead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px}
@@ -101,6 +118,8 @@
     <div id="vis-badge"></div>
   </header>
 
+  <section class="hero" id="hero" hidden></section>
+
   <div class="modes">
     <button class="mode" type="button" data-mode="projects" aria-pressed="true">프로젝트</button>
     <button class="mode" type="button" data-mode="docs" aria-pressed="false">문서 전체</button>
@@ -154,6 +173,38 @@
   }
   function href(p) { return 'viewer.html?p=' + encodeURIComponent(p); }
 
+  // --- 랜딩 히어로 (site.json 의 hero: tagline, metrics[], contact{}) ---
+  (function renderHero() {
+    var hero = site.hero;
+    var el = document.getElementById('hero');
+    if (!hero || typeof hero !== 'object' || !el) return;
+    // 연락처 링크는 http(s) 주소만 허용한다. javascript: 같은 스킴은 그리지 않는다.
+    function httpUrl(u) {
+      u = String(u == null ? '' : u).trim();
+      return (u.indexOf('https://') === 0 || u.indexOf('http://') === 0) ? u : '';
+    }
+    var html = '';
+    if (hero.tagline) html += '<p class="hero-tag">' + esc(hero.tagline) + '</p>';
+    var metrics = (hero.metrics || []).filter(function (m) { return m && m.value; }).slice(0, 4);
+    if (metrics.length) {
+      html += '<div class="hero-metrics">' + metrics.map(function (m) {
+        return '<div class="metric"><div class="v">' + esc(m.value) + '</div>' +
+               '<div class="l">' + esc(m.label || '') + '</div>' +
+               (m.note ? '<div class="n">' + esc(m.note) + '</div>' : '') + '</div>';
+      }).join('') + '</div>';
+    }
+    var c = hero.contact || {};
+    var foot = [];
+    if (httpUrl(c.github)) foot.push('<a href="' + esc(httpUrl(c.github)) + '" rel="noopener">GitHub</a>');
+    if (httpUrl(c.linkedin)) foot.push('<a href="' + esc(httpUrl(c.linkedin)) + '" rel="noopener">LinkedIn</a>');
+    if (c.email) foot.push('<a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a>');
+    if (site.updated) foot.push('<span>최종 업데이트 ' + esc(site.updated) + '</span>');
+    if (foot.length) html += '<div class="hero-foot">' + foot.join('') + '</div>';
+    if (!html) return;
+    el.innerHTML = html;
+    el.hidden = false;
+  })();
+
   // --- 카테고리 탭 (문서 뷰 전용) ---
   var tabs = document.getElementById('tabs');
   var cats = [{ key: 'all', label: '전체' }].concat(
@@ -192,7 +243,7 @@
   });
 
   function hay(o, extra) {
-    return [o.title || o.name, o.summary, o.role, o.headline, o.group,
+    return [o.title || o.name, o.summary, o.role, o.headline, o.group, o.org,
             (o.tags || []).join(' '), (o.stack || []).join(' '), extra || '']
       .join(' ').toLowerCase();
   }
@@ -213,6 +264,7 @@
 
   function projectCard(p, i) {
     var meta = [];
+    if (p.org) meta.push('<span><b>소속</b> ' + esc(p.org) + '</span>');
     if (p.role) meta.push('<span><b>역할</b> ' + esc(p.role) + '</span>');
     if (p.stage) meta.push('<span><b>단계</b> ' + esc(p.stage) + '</span>');
     meta.push('<span><b>문서</b> ' + p.doc_count + '건</span>');
@@ -260,9 +312,23 @@ projectHead(p) +
       var list = projects.filter(matchProject);
       document.getElementById('count').textContent =
         '프로젝트 ' + list.length + '건' + (list.length !== projects.length ? ' / 전체 ' + projects.length + '건' : '');
-      plist.innerHTML = list.length
-        ? list.map(projectCard).join('')
-        : '<div class="empty">프로젝트가 없습니다. 문서 앞머리에 <code>project: 이름</code> 을 넣으면 여기에 묶입니다.</div>';
+      if (!list.length) {
+        plist.innerHTML = '<div class="empty">프로젝트가 없습니다. 문서 앞머리에 <code>project: 이름</code> 을 넣으면 여기에 묶입니다.</div>';
+      } else if (list.some(function (p) { return p.org; })) {
+        // 소속(org)별로 묶는다. 순서는 최근 활동순(이미 정렬됨)에서 처음 나온 소속 순.
+        var groups = [], seen = {};
+        list.forEach(function (p) {
+          var k = p.org || '기타';
+          if (!seen[k]) { seen[k] = { org: k, items: [] }; groups.push(seen[k]); }
+          seen[k].items.push(p);
+        });
+        plist.innerHTML = groups.map(function (g) {
+          return '<h3 class="ogroup">' + esc(g.org) + ' <span>' + g.items.length + '건</span></h3>' +
+                 g.items.map(function (p) { return projectCard(p, projects.indexOf(p)); }).join('');
+        }).join('');
+      } else {
+        plist.innerHTML = list.map(projectCard).join('');
+      }
       Array.prototype.forEach.call(plist.querySelectorAll('[data-toggle]'), function (b) {
         b.onclick = function () {
           var el = document.getElementById('docs-' + b.dataset.toggle);
@@ -289,7 +355,8 @@ projectHead(p) +
   }
 
   document.getElementById('footer').textContent =
-    '프로젝트 ' + projects.length + '건 · 문서 ' + entries.length + '건';
+    '프로젝트 ' + projects.length + '건 · 문서 ' + entries.length + '건' +
+    (site.updated ? ' · 최종 업데이트 ' + site.updated : '');
   render();
 })();
 </script>

@@ -6,7 +6,7 @@
 
 ## 구조
 
-- `projects/` — 프로젝트 문서. 같은 `project:` 값을 가진 문서는 사이트에서 하나의 카드로 묶입니다.
+- `projects/` — 프로젝트 문서. 같은 `project:` 값을 가진 문서는 사이트에서 하나의 카드로 묶이고, `org:`(소속·시기)가 있으면 소속별로 묶여 보입니다.
 - `notes/` — 트러블슈팅 등 기술 노트
 - `manifest.json` — 전체 목록 (프로그램이 읽는 용도)
 - `index.html` — 프로젝트 뷰와 문서 뷰
@@ -24,6 +24,21 @@ bash ~/personal_git_package/promote.sh <같은 경로> --as <같은 경로> --pu
 ```
 
 작성 형식은 `work-journal/guides/PROJECT_TEMPLATE.md` 를 따릅니다.
+
+## 첫 화면 (랜딩 히어로)
+
+`site.json` 의 `hero` 를 고치면 첫 화면의 한 줄 소개, 대표 지표(최대 4개), 연락처가 바뀝니다.
+`hero` 를 지우면 히어로도 사라집니다. 최종 업데이트 날짜는 가장 최근 문서의 `date` 에서 자동으로 나옵니다.
+
+```json
+"hero": {
+  "tagline": "한 줄 정체성",
+  "metrics": [ { "value": "97.8%", "label": "픽 성공률", "note": "샘플 500회" } ],
+  "contact": { "github": "https://github.com/Choiyunseobee", "email": "" }
+}
+```
+
+고친 뒤 `python3 scripts/build_manifest.py` 를 다시 실행해야 반영됩니다. 지표 값도 승격 시 민감어 검사를 받습니다.
 
 ## 주의
 

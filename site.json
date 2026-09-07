@@ -1,6 +1,18 @@
 {
   "title": "최윤섭 · 경험 아카이브",
-  "subtitle": "로봇 SW 엔지니어로 해온 일을 프로젝트 단위로 정리합니다.",
+  "subtitle": "학부 프로젝트부터 현장실습, 재직 중 과제까지 해온 일을 프로젝트 단위로 정리합니다.",
   "visibility": "public",
-  "sections": ["projects", "notes"]
+  "sections": ["projects", "notes"],
+  "hero": {
+    "tagline": "로봇 SW 엔지니어. 카메라가 본 것을 로봇의 움직임으로 바꾸는 비전·제어 파이프라인을 설계하고, 시뮬레이션이 아닌 실기에서 검증합니다.",
+    "metrics": [
+      { "value": "97.8%", "label": "픽 성공률", "note": "예시 값 · 실제 수치로 교체" },
+      { "value": "9.1s",  "label": "사이클타임", "note": "예시 값 · 실제 수치로 교체" },
+      { "value": "0.2mm", "label": "정렬 반복 오차", "note": "예시 값 · 실제 수치로 교체" }
+    ],
+    "contact": {
+      "github": "https://github.com/Choiyunseobee",
+      "email": ""
+    }
+  }
 }
