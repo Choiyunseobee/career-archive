@@ -228,6 +228,8 @@ def collect():
                     "project": str(meta.get("project") or "").strip(),
                     # 소속·시기 (예: "학부 졸업 프로젝트", "현장실습 · 제조 자동화 기업", "재직 · 로봇 SW 기업")
                     "org": str(meta.get("org") or "").strip(),
+                    # track: 소속과 다른 축. 같은 회사 안에도 현업과 연구가 섞인다.
+                    "track": str(meta.get("track") or "").strip(),
                     "role": str(meta.get("role") or "").strip(),
                     "period": str(meta.get("period") or "").strip(),
                     "stage": str(meta.get("stage") or "").strip(),
@@ -248,7 +250,7 @@ def build_projects(entries):
 
     def new_bucket(name):
         return {
-            "name": name, "org": "", "period": "", "role": "", "stage": "",
+            "name": name, "org": "", "track": "", "period": "", "role": "", "stage": "",
             "headline": "", "summary": "", "stack": [], "tags": [],
             "main": None, "docs": [], "dates": [],
         }
@@ -258,13 +260,15 @@ def build_projects(entries):
             b["dates"].append(e["date"])
         if e["org"] and not b["org"]:
             b["org"] = e["org"]
+        if e["track"] and not b["track"]:
+            b["track"] = e["track"]
         for f in ("stack", "tags"):
             for v in e[f]:
                 if v not in b[f]:
                     b[f].append(v)
         if e["category"] == "projects" and b["main"] is None:
             b["main"] = e["path"]
-            for f in ("org", "period", "role", "stage", "headline", "summary"):
+            for f in ("org", "track", "period", "role", "stage", "headline", "summary"):
                 if e[f]:
                     b[f] = e[f]
         else:

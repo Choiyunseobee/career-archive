@@ -30,7 +30,8 @@ window.ARCHIVE_MANIFEST = {
         "마커인식",
         "공정최적화"
       ],
-      "title": "마커 기반 로봇 위치 보정 시스템"
+      "title": "마커 기반 로봇 위치 보정 시스템",
+      "track": "현업"
     },
     {
       "category": "projects",
@@ -59,7 +60,8 @@ window.ARCHIVE_MANIFEST = {
         "실패대응설계",
         "DDS"
       ],
-      "title": "로봇 운영 화면과 작업 상태 동기화"
+      "title": "로봇 운영 화면과 작업 상태 동기화",
+      "track": "현업"
     },
     {
       "category": "projects",
@@ -86,7 +88,8 @@ window.ARCHIVE_MANIFEST = {
         "상태전이",
         "실패복구"
       ],
-      "title": "비주얼 서보잉 하이브리드 제어 프레임워크 설계"
+      "title": "비주얼 서보잉 하이브리드 제어 프레임워크 설계",
+      "track": "연구"
     },
     {
       "category": "projects",
@@ -97,7 +100,7 @@ window.ARCHIVE_MANIFEST = {
       "org": "코라스로보틱스 · 2026.01 ~ 재직",
       "path": "projects/marker-occlusion-bias.md",
       "period": "2026.08.19 ~ 2026.08.28",
-      "project": "마커 기반 로봇 위치 보정",
+      "project": "마커 자세 편향 보정 실험",
       "role": "실험 설계 · 측정 · 분석 · 논문 원고",
       "stack": [
         "ROS2 Humble",
@@ -115,7 +118,8 @@ window.ARCHIVE_MANIFEST = {
         "부분가림",
         "실험설계"
       ],
-      "title": "부분 가림 시 마커 자세 편향 보정"
+      "title": "부분 가림 시 마커 자세 편향 보정",
+      "track": "연구"
     },
     {
       "category": "projects",
@@ -141,7 +145,8 @@ window.ARCHIVE_MANIFEST = {
         "경로추종",
         "원인분리"
       ],
-      "title": "ROS 기반 터틀봇 자율주행 안정화"
+      "title": "ROS 기반 터틀봇 자율주행 안정화",
+      "track": "교육"
     },
     {
       "category": "projects",
@@ -167,7 +172,8 @@ window.ARCHIVE_MANIFEST = {
         "비용비교",
         "실습과제"
       ],
-      "title": "공장 레이아웃 설계와 공정 개선 산정안"
+      "title": "공장 레이아웃 설계와 공정 개선 산정안",
+      "track": "교육"
     },
     {
       "category": "projects",
@@ -194,7 +200,8 @@ window.ARCHIVE_MANIFEST = {
         "원인분석",
         "지그설계"
       ],
-      "title": "6축 로봇 CFRP 곡면 드릴링 품질 개선"
+      "title": "6축 로봇 CFRP 곡면 드릴링 품질 개선",
+      "track": "현업"
     },
     {
       "category": "projects",
@@ -221,7 +228,8 @@ window.ARCHIVE_MANIFEST = {
         "무게중심",
         "선행의존성"
       ],
-      "title": "수평 유지 주행 모빌리티 기구 설계"
+      "title": "수평 유지 주행 모빌리티 기구 설계",
+      "track": "학부"
     },
     {
       "category": "projects",
@@ -247,7 +255,8 @@ window.ARCHIVE_MANIFEST = {
         "원인분리",
         "팀장"
       ],
-      "title": "PLC 기반 자동 조리 공정 제어"
+      "title": "PLC 기반 자동 조리 공정 제어",
+      "track": "학부"
     },
     {
       "category": "projects",
@@ -275,7 +284,8 @@ window.ARCHIVE_MANIFEST = {
         "TCP/IP",
         "앱제작"
       ],
-      "title": "초음파 센서 기반 RC카 원격 제어"
+      "title": "초음파 센서 기반 RC카 원격 제어",
+      "track": "학부"
     },
     {
       "category": "projects",
@@ -299,7 +309,8 @@ window.ARCHIVE_MANIFEST = {
         "PID",
         "시뮬레이션"
       ],
-      "title": "밸런싱 로봇 동역학 모델링과 PID 제어 설계"
+      "title": "밸런싱 로봇 동역학 모델링과 PID 제어 설계",
+      "track": "학부"
     },
     {
       "category": "projects",
@@ -325,20 +336,14 @@ window.ARCHIVE_MANIFEST = {
         "문제분리",
         "공모전"
       ],
-      "title": "객체 인식 기반 미로 탈출 제어 시스템"
+      "title": "객체 인식 기반 미로 탈출 제어 시스템",
+      "track": "학부"
     }
   ],
   "projects": [
     {
-      "doc_count": 2,
-      "docs": [
-        {
-          "category_label": "프로젝트",
-          "date": "2026-08-28",
-          "path": "projects/marker-occlusion-bias.md",
-          "title": "부분 가림 시 마커 자세 편향 보정"
-        }
-      ],
+      "doc_count": 1,
+      "docs": [],
       "headline": "장비가 움직여도 재티칭 없이 작업을 잇는다. 위치 보정 시간 마커 1개당 70 → 24초, 공정 사이클타임 60 → 47분",
       "last_activity": "2026-09-07",
       "main": "projects/marker-based-robot-calibration.md",
@@ -354,10 +359,7 @@ window.ARCHIVE_MANIFEST = {
         "AprilTag",
         "tf2",
         "Lua",
-        "협동로봇",
-        "Python",
-        "NumPy",
-        "rosbag2"
+        "협동로봇"
       ],
       "stage": "현장 적용",
       "summary": "3D 프린터·거치대·세척기를 오가는 후처리 공정을 로봇으로 연결하면서, 장비 위치가 바뀌어도 카메라로 현재 위치를 인식해 로봇 좌표를 자동 보정하는 시스템을 만들었다. 마커 방식 세 가지를 같은 환경에서 비교해 고르고, 카메라 내부 파라미터를 실측으로 보정했다.",
@@ -365,12 +367,9 @@ window.ARCHIVE_MANIFEST = {
         "로봇티칭",
         "좌표보정",
         "마커인식",
-        "공정최적화",
-        "자세추정",
-        "카메라보정",
-        "부분가림",
-        "실험설계"
-      ]
+        "공정최적화"
+      ],
+      "track": "현업"
     },
     {
       "doc_count": 1,
@@ -398,7 +397,8 @@ window.ARCHIVE_MANIFEST = {
         "상태동기화",
         "실패대응설계",
         "DDS"
-      ]
+      ],
+      "track": "현업"
     },
     {
       "doc_count": 1,
@@ -424,7 +424,37 @@ window.ARCHIVE_MANIFEST = {
         "제어설계",
         "상태전이",
         "실패복구"
-      ]
+      ],
+      "track": "연구"
+    },
+    {
+      "doc_count": 1,
+      "docs": [],
+      "headline": "가림으로 생기는 상대 자세 편향을 위치 0.0846 → 0.0113 mm, 회전 0.349 → 0.016°로 줄였다 (200/200 평가 단위 개선)",
+      "last_activity": "2026-08-28",
+      "main": "projects/marker-occlusion-bias.md",
+      "name": "마커 자세 편향 보정 실험",
+      "org": "코라스로보틱스 · 2026.01 ~ 재직",
+      "org_rank": 0,
+      "period": "2026.08.19 ~ 2026.08.28",
+      "role": "실험 설계 · 측정 · 분석 · 논문 원고",
+      "stack": [
+        "ROS2 Humble",
+        "OpenCV",
+        "Python",
+        "AprilTag",
+        "NumPy",
+        "rosbag2"
+      ],
+      "stage": "검증 완료 · 논문 원고",
+      "summary": "2×2 마커 보드에서 태그 하나가 가려지면 보드가 움직이지 않았는데도 자세값이 튄다. 보이는 태그 조합과 같은 조합의 기준값으로 비교하는 방법을 5개 보드 200개 평가 단위에서 검증했다. 그 과정에서 생산 설비의 카메라 초점거리가 1.5배 틀려 있던 것을 찾아 실측 모델로 교체했다.",
+      "tags": [
+        "자세추정",
+        "카메라보정",
+        "부분가림",
+        "실험설계"
+      ],
+      "track": "연구"
     },
     {
       "doc_count": 1,
@@ -450,7 +480,8 @@ window.ARCHIVE_MANIFEST = {
         "힘토크센서",
         "원인분석",
         "지그설계"
-      ]
+      ],
+      "track": "현업"
     },
     {
       "doc_count": 1,
@@ -475,7 +506,8 @@ window.ARCHIVE_MANIFEST = {
         "자율주행",
         "경로추종",
         "원인분리"
-      ]
+      ],
+      "track": "교육"
     },
     {
       "doc_count": 1,
@@ -500,7 +532,8 @@ window.ARCHIVE_MANIFEST = {
         "소요량산정",
         "비용비교",
         "실습과제"
-      ]
+      ],
+      "track": "교육"
     },
     {
       "doc_count": 1,
@@ -526,7 +559,8 @@ window.ARCHIVE_MANIFEST = {
         "3D프린팅",
         "무게중심",
         "선행의존성"
-      ]
+      ],
+      "track": "학부"
     },
     {
       "doc_count": 1,
@@ -551,7 +585,8 @@ window.ARCHIVE_MANIFEST = {
         "시퀀스제어",
         "원인분리",
         "팀장"
-      ]
+      ],
+      "track": "학부"
     },
     {
       "doc_count": 1,
@@ -578,7 +613,8 @@ window.ARCHIVE_MANIFEST = {
         "센서처리",
         "TCP/IP",
         "앱제작"
-      ]
+      ],
+      "track": "학부"
     },
     {
       "doc_count": 1,
@@ -601,7 +637,8 @@ window.ARCHIVE_MANIFEST = {
         "동역학모델링",
         "PID",
         "시뮬레이션"
-      ]
+      ],
+      "track": "학부"
     },
     {
       "doc_count": 1,
@@ -626,7 +663,8 @@ window.ARCHIVE_MANIFEST = {
         "제어로직",
         "문제분리",
         "공모전"
-      ]
+      ],
+      "track": "학부"
     }
   ],
   "sections": [

@@ -93,6 +93,15 @@
   .tab:hover,.tagchip:hover,.btn:hover,.toggle:hover{border-color:var(--accent)}
   .tab[aria-pressed="true"],.tagchip[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);border-color:var(--accent);font-weight:600}
   .toggle[aria-expanded="true"]{background:var(--surface2)}
+  /* 트랙: 소속과 다른 축. 같은 회사 안에도 현업과 연구가 섞인다. */
+  .filters{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px;align-items:center}
+  .filters .flabel{font-size:13px;color:var(--muted);margin-right:2px}
+  .filters button{min-height:36px;padding:6px 14px;font-size:13.5px;font-weight:500;cursor:pointer;
+    background:var(--surface);color:var(--muted);border:1px solid var(--control-border);border-radius:9999px}
+  .filters button:hover{border-color:var(--accent);color:var(--text)}
+  .filters button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);
+    border-color:var(--accent);font-weight:600}
+  .filters button .c{font-variant-numeric:tabular-nums;opacity:.75;margin-left:5px}
   .tagbar{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
   .tagbar .tagchip{font-size:13px}
   .tagbar .tagchip span{color:var(--muted);font-weight:400}
@@ -181,6 +190,7 @@
     <div class="tabs" id="tabs"></div>
     <button class="toggle" type="button" id="tagtoggle" aria-expanded="false" hidden>기술 태그</button>
   </div>
+  <div class="filters" id="trackbar" hidden></div>
   <div class="tagbar" id="tagbar" hidden></div>
   <div class="count" id="count"></div>
 
@@ -208,6 +218,7 @@
   var entries = M.entries || [];
   var projects = M.projects || [];
   var creds = document.getElementById('creds');
+  var trackbar = document.getElementById('trackbar');
   var CRED = site.credentials || {};
   // groups 는 배열이라 표시 순서가 보존된다. 객체 키였다면 manifest 생성 때 정렬돼 뒤섞인다.
   var CRED_GROUPS = (CRED.groups || []).filter(function (g) {
@@ -216,7 +227,7 @@
   var credsOpen = Object.create(null);
   var CRED_FOLD = 8;   // 이보다 많으면 접고 펼치기 버튼을 준다
   var sections = M.sections || [];
-  var state = { mode: 'projects', cat: 'all', tag: null, q: '', tagsOpen: false };
+  var state = { mode: 'projects', cat: 'all', tag: null, track: null, q: '', tagsOpen: false };
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
@@ -296,6 +307,27 @@
   document.getElementById('search').oninput = function (ev) {
     state.q = ev.target.value.trim().toLowerCase(); render();
   };
+  // 트랙 필터. site.json 의 org_order 처럼 순서를 고정한다.
+  var TRACK_ORDER = ['현업', '연구', '교육', '학부'];
+  var trackCount = Object.create(null);
+  projects.forEach(function (p) { if (p.track) trackCount[p.track] = (trackCount[p.track] || 0) + 1; });
+  var trackNames = TRACK_ORDER.filter(function (t) { return trackCount[t]; })
+    .concat(Object.keys(trackCount).filter(function (t) { return TRACK_ORDER.indexOf(t) < 0; }).sort());
+  if (trackNames.length > 1) {
+    var lab = document.createElement('span');
+    lab.className = 'flabel'; lab.textContent = '구분';
+    trackbar.append(lab);
+    [['', '전체', projects.length]].concat(trackNames.map(function (t) { return [t, t, trackCount[t]]; }))
+      .forEach(function (row) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.dataset.track = row[0];
+        b.innerHTML = esc(row[1]) + '<span class="c">' + row[2] + '</span>';
+        b.setAttribute('aria-pressed', String(row[0] === ''));
+        b.onclick = function () { state.track = row[0] || null; render(); };
+        trackbar.append(b);
+      });
+  }
+
   // credentials 가 site.json 에 없으면 탭 자체를 두지 않는다.
   document.getElementById('mode-creds').hidden = CRED_GROUPS.length === 0;
   Array.prototype.forEach.call(document.querySelectorAll('.mode'), function (b) {
@@ -314,6 +346,7 @@
     return true;
   }
   function matchProject(p) {
+    if (state.track && p.track !== state.track) return false;
     if (state.tag && (p.tags || []).concat(p.stack || []).indexOf(state.tag) === -1) return false;
     if (state.q) {
       var docText = (p.docs || []).map(function (d) { return d.title; }).join(' ');
@@ -407,6 +440,10 @@
     tagtoggle.textContent = (showTags ? '기술 태그 접기' : '기술 태그 보기') + ' (' + tagNames.length + ')';
     // 학력·자격·교육은 목록이 짧고 고정이라 검색·태그 필터를 걸지 않는다.
     document.querySelector('.controls').hidden = isCred;
+    trackbar.hidden = state.mode !== 'projects' || trackbar.childElementCount === 0;
+    Array.prototype.forEach.call(trackbar.querySelectorAll('button'), function (b) {
+      b.setAttribute('aria-pressed', String((b.dataset.track || null) === (state.track || null)));
+    });
     creds.hidden = !isCred;
 
     if (isCred) {
