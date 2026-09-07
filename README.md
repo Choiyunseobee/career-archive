@@ -17,7 +17,7 @@
 원본은 비공개 저장소(`work-journal`)에 두고, 다듬은 것만 승격합니다.
 
 ```bash
-bash ~/personal_git_package/promote.sh reports/gui_ws/WEEKLY_2026-09-04.md \
+bash ~/personal_git_package/promote.sh reports/gui_ws/LOG_2026-09-04.md \
      --as projects/visual-servoing.md
 # 내용을 확인한 뒤
 bash ~/personal_git_package/promote.sh <같은 경로> --as <같은 경로> --publish
