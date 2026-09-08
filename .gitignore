@@ -26,3 +26,4 @@ config.env
 *.token
 .env
 _staging/
+!study.html
