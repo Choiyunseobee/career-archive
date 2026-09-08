@@ -501,17 +501,50 @@ def main():
         site_out["glossary"] = SITE["glossary"]
     # book: 이론 심화 교재 장 목록. build_textbook.py 가 site.json 에 써 넣는다.
     # 첫 화면의 "연결된 교재 장" 칩이 번호를 제목으로 바꿀 때 쓴다.
-    if isinstance(SITE.get("book"), dict) and SITE["book"].get("chapters"):
-        site_out["book"] = SITE["book"]
+    # 잘못된 값을 조용히 빼고 통과하면, 화면에서 통째로 사라진 것을 아무도 모른 채
+    # manifest 가 덮어써진다. 키가 있는데 형식이 틀린 것은 작성 실수이므로 실패로 끊는다
+    # (Codex 5차 17번). 키가 아예 없는 것은 정상이다.
+    if "book" in SITE:
+        b = SITE["book"]
+        if not (isinstance(b, dict) and isinstance(b.get("path"), str) and b.get("path")
+                and isinstance(b.get("chapters"), list) and b["chapters"]
+                and all(isinstance(c, dict) and isinstance(c.get("no"), int)
+                        and isinstance(c.get("title"), str) and c.get("title")
+                        for c in b["chapters"])):
+            print("[!] site.json 의 book 형식이 틀렸습니다. path(문자열)와 "
+                  "chapters[{no:정수, title:문자열}] 가 필요합니다.", file=sys.stderr)
+            return 2
+        site_out["book"] = b
     # interview: 프로젝트에 대해 자주 받는 기술 질문과 답변. 표시 필드는 문자열이어야 한다.
-    iv = SITE.get("interview")
-    if isinstance(iv, dict) and isinstance(iv.get("items"), list):
-        ok = all(isinstance(i, dict) and isinstance(i.get("q"), str) and i.get("q")
-                 and isinstance(i.get("a"), str) and i.get("a") for i in iv["items"])
-        if ok:
-            site_out["interview"] = iv
+    if "interview" in SITE:
+        iv = SITE["interview"]
+
+        def _qa(x):
+            return (isinstance(x, dict) and isinstance(x.get("q"), str) and x.get("q")
+                    and isinstance(x.get("a"), str) and x.get("a"))
+
+        bad = None
+        if not (isinstance(iv, dict) and isinstance(iv.get("items"), list) and iv["items"]):
+            bad = "interview.items 가 비어 있거나 목록이 아닙니다"
         else:
-            print("[!] site.json 의 interview 항목에 q/a 문자열이 빠졌습니다. 무시합니다.", file=sys.stderr)
+            for n, it in enumerate(iv["items"]):
+                if not _qa(it):
+                    bad = "items[%d] 의 q/a 가 비어 있거나 문자열이 아닙니다" % n
+                    break
+                fu = it.get("fu", [])
+                if not isinstance(fu, list):
+                    bad = "items[%d].fu 가 목록이 아닙니다" % n
+                    break
+                for m, f in enumerate(fu):
+                    if not _qa(f):
+                        bad = "items[%d].fu[%d] 의 q/a 가 비어 있거나 문자열이 아닙니다" % (n, m)
+                        break
+                if bad:
+                    break
+        if bad:
+            print("[!] site.json 의 interview 형식이 틀렸습니다: " + bad, file=sys.stderr)
+            return 2
+        site_out["interview"] = iv
     manifest = {
         "site": site_out,
         "sections": [{"key": k, "label": l, "description": d} for k, l, d in SECTIONS],

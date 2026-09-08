@@ -178,7 +178,7 @@
   .ov-tracks button:hover{border-color:var(--accent);color:var(--accent)}
   .ov-tracks b{font-size:18px;font-variant-numeric:tabular-nums;margin-right:6px}
   /* 프로젝트 카드 격자 */
-  .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;
+  .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:14px;min-width:0;
     margin:0 0 8px;align-items:start}
   .pmini{background:var(--surface);border:1px solid var(--border);border-radius:10px}
   .pmini:hover{border-color:var(--control-border)}
@@ -607,8 +607,13 @@
   function bindProjectEvents() {
     Array.prototype.forEach.call(plist.querySelectorAll('[data-open]'), function (b) {
       b.onclick = function () {
-        state.open = (state.open === b.dataset.open) ? null : b.dataset.open;
+        var id = b.dataset.open;
+        state.open = (state.open === id) ? null : id;
         render();
+        // render 가 plist.innerHTML 을 갈아치우면서 방금 누른 버튼이 사라진다.
+        // 그대로 두면 포커스가 body 로 떨어져 키보드로 계속 넘길 수 없다 (Codex 5차 22번).
+        var again = plist.querySelector('[data-open="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]');
+        if (again && again.focus) again.focus();
       };
     });
     Array.prototype.forEach.call(plist.querySelectorAll('[data-back]'), function (b) {
