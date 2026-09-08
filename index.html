@@ -275,7 +275,7 @@
     <section class="hero" id="hero" hidden></section>
   </header>
 
-  <p class="booklink"><a href="study.html">로봇 SW 이론 심화 교재 18장 &rsaquo;</a><span>기구학·제어부터 비전·학습까지. 쉬운 설명, 연습문제, 면접 문항 포함</span></p>
+  <p class="booklink" id="booklink" hidden><a href="study.html" id="booklink-a">로봇 SW 이론 심화 교재 18장 &rsaquo;</a><span>기구학·제어부터 비전·학습까지. 쉬운 설명, 연습문제, 면접 문항 포함</span></p>
   <div class="modes">
     <button class="mode" type="button" data-mode="overview" aria-pressed="true">개요</button>
     <button class="mode" type="button" data-mode="projects" aria-pressed="false">프로젝트</button>
@@ -333,9 +333,21 @@
   var GLOSS = (site.glossary && site.glossary.terms) || [];
   // 이론 심화 교재 장 목록. build_textbook.py 가 site.json 에 써 넣는다.
   var BOOKINFO = site.book || {};
-  var BOOKPATH = BOOKINFO.path || 'study.html';
+  // 교재가 공개돼 있지 않으면 빈 값이다. 없는 페이지로 링크하지 않는다.
+  var BOOKPATH = BOOKINFO.path || '';
   var CHAPTERS = {};
   (BOOKINFO.chapters || []).forEach(function (c) { CHAPTERS[c.no] = c.title; });
+  // 교재가 있을 때만 상단 링크를 켠다. 링크를 지우지 않고 숨겨 두는 이유는
+  // 원본 아티팩트의 정정이 끝나면 site.json 의 book 만 돌아오면 되기 때문이다.
+  (function bookLink() {
+    var box = document.getElementById('booklink');
+    var a = document.getElementById('booklink-a');
+    if (!box || !a || !BOOKPATH) return;
+    a.setAttribute('href', BOOKPATH);
+    a.textContent = '로봇 SW 이론 심화 교재 '
+      + ((BOOKINFO.chapters || []).length || '') + '장 ›';
+    box.hidden = false;
+  })();
   // 용어 사전의 한정 문구(정식 정의가 아니라는 안내)를 목록 앞에 보여준다 (Codex 4차 20번).
   var GLOSS_NOTE = (site.glossary && site.glossary.note) || '';
   var CRED = site.credentials || {};
@@ -831,7 +843,8 @@
     var parts = [];
     if (site.visibility) parts.push(site.visibility === 'private' ? '비공개 저장소' : '공개 저장소');
     parts.push('프로젝트 ' + projects.length + '건 · 문서 ' + entries.length + '건');
-    parts.push('<a href="study.html">이론 심화 교재 18장</a>');
+    if (BOOKPATH) parts.push('<a href="' + esc(BOOKPATH) + '">이론 심화 교재 '
+      + ((BOOKINFO.chapters || []).length || '') + '장</a>');
     if (site.updated) parts.push('최근 문서 ' + esc(site.updated));
     var c = (site.hero && site.hero.contact) || {};
     if (httpUrl(c.github)) parts.push('<a href="' + esc(httpUrl(c.github)) + '" rel="noopener">GitHub</a>');
