@@ -50,4 +50,6 @@ bash ~/personal_git_package/promote.sh <같은 경로> --as <같은 경로> --pu
 > 승격 전 `work-journal/guides/PROMOTION_CHECKLIST.md` 를 통과시키세요.
 
 `.gitignore` 는 허용 목록 방식입니다. 허용 경로는 `README.md`, `DESIGN.md`, `projects/*.md`, `notes/*.md`, 사이트 파일, `assets/*.svg` 뿐입니다.
-증명서·성적표·자격증 스캔·사진 등 증빙 원본은 이 저장소에 올리지 않습니다. 개인 PC와 `work-journal` 에만 둡니다.
+증명서·성적표·자격증 스캔·사진 등 증빙 원본은 **어느 저장소에도 올리지 않습니다.**
+공개 저장소는 물론 비공개 `work-journal` 에도 두지 않고, 개인 PC 의 저장소 밖 보관소
+(`CareerLocal/originals/`)에만 둡니다. 저장소에는 자료 ID 와 확인한 사실만 남깁니다.

@@ -184,6 +184,7 @@
         var head = bq.querySelector('p');
         if (head && head.textContent.trim() === '쉽게 말하면') bq.classList.add('plain');
       });
+      relinkDocs();
       decorate();
     })
     .catch(function () {
@@ -198,6 +199,36 @@
       p.appendChild(a);
       doc.appendChild(p);
     });
+
+  // 문서 안 상대 링크는 그 문서가 있는 폴더 기준이다.
+  // 페이지 주소가 viewer.html 이라 그냥 두면 저장소 루트에서 찾아 404 가 난다.
+  // 다른 마크다운 문서를 가리키면 뷰어 주소로, 그 밖은 실제 파일 경로로 바꾼다.
+  function relinkDocs() {
+    var dir = String(entry.path || '').replace(/[^/]*$/, '');   // "projects/"
+    Array.prototype.forEach.call(doc.querySelectorAll('a[href]'), function (a) {
+      var raw = a.getAttribute('href');
+      if (!raw || /^([a-z][a-z0-9+.-]*:|\/\/|#|\/)/i.test(raw)) return;  // 절대·앵커는 그대로
+      var hash = '';
+      var i = raw.indexOf('#');
+      if (i >= 0) { hash = raw.slice(i); raw = raw.slice(0, i); }
+      if (!raw) return;                                          // "#절" 만 있는 링크
+      var target = normalize(dir + raw);
+      a.setAttribute('href', /\.md$/i.test(target)
+        ? 'viewer.html?p=' + encodeURIComponent(target) + hash
+        : target + hash);
+    });
+  }
+
+  // "a/b/../c.md" 처럼 상위로 올라가는 경로를 정리한다.
+  function normalize(path) {
+    var out = [];
+    path.split('/').forEach(function (seg) {
+      if (!seg || seg === '.') return;
+      if (seg === '..') { out.pop(); return; }
+      out.push(seg);
+    });
+    return out.join('/');
+  }
 
   // 렌더 뒤 손질: 표 감싸기와 숫자 열 오른쪽 정렬, H2 목차
   function decorate() {

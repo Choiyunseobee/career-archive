@@ -68,7 +68,11 @@ def load_site():
         ok = isinstance(groups, list) and all(
             isinstance(g, dict) and isinstance(g.get("label"), str)
             and isinstance(g.get("items"), list)
-            and all(isinstance(i, dict) and i.get("name") for i in g["items"])
+            # 값이 문자열인지까지 본다. 배열·객체가 들어오면 화면에 "[object Object]" 가 나온다.
+            and all(isinstance(i, dict) and isinstance(i.get("name"), str) and i["name"].strip()
+                    and all(isinstance(i.get(k, ""), str)
+                            for k in ("org", "date", "period", "hours", "detail", "project"))
+                    for i in g["items"])
             for g in groups)
         if not ok:
             # 조용히 기본값으로 넘어가면 화면에서 통째로 사라진 것을 눈치채기 어렵다.
@@ -86,7 +90,11 @@ def load_site():
     if gl is not None:
         terms = gl.get("terms") if isinstance(gl, dict) else None
         if not (isinstance(terms, list)
-                and all(isinstance(t, dict) and t.get("t") and t.get("d") for t in terms)):
+                and all(isinstance(t, dict)
+                        and isinstance(t.get("t"), str) and t["t"].strip()
+                        and isinstance(t.get("d"), str) and t["d"].strip()
+                        and isinstance(t.get("e", ""), str)
+                        for t in terms)):
             print("[!] site.json 의 glossary 형식이 맞지 않습니다. "
                   "{terms: [{t, e, d}]} 여야 합니다. 무시합니다.", file=sys.stderr)
             gl = None
