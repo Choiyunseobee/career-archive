@@ -206,8 +206,8 @@
   .pbadges span.tk{border-color:transparent;background:var(--accent-soft);color:var(--accent);font-weight:600}
   .pmini .nm{font-weight:600;font-size:17px;line-height:1.35}
   .pmini .wh{font-size:13px;color:var(--muted);margin-top:4px}
-  .pmini .duty{font-size:13.5px;margin-top:8px;line-height:1.6}
-  .pmini .duty b{color:var(--muted);font-size:12px;font-weight:600;margin-right:5px}
+  .pmini .duty{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.55}
+  .pmini .duty b{color:var(--text);font-size:12px;font-weight:600;margin-right:5px}
   .pmini .sm{font-size:14px;margin:9px 0 0;line-height:1.65}
   .pmini .mini-plain{font-size:13.5px;background:var(--accent-soft);border-radius:7px;padding:10px 12px;
     margin-top:10px;line-height:1.65}
@@ -520,6 +520,10 @@
     });
   }
 
+  // 소속 문자열은 '회사 · 2026.01 ~ 재직' 처럼 기간을 포함한다.
+  // 카드에는 프로젝트 기간을 따로 보여주므로 이름만 쓴다. 날짜가 두 번 나오지 않게.
+  function orgName(o) { return String(o || '').split('·')[0].trim(); }
+
   function col(title, arr) {
     if (!arr || !arr.length) return '';
     return '<div class="pcol"><h4>' + esc(title) + '</h4><ul>' +
@@ -555,7 +559,6 @@
     var more = '';
     if (open) {
       var meta = [];
-      if (p.stage) meta.push('<span><b>단계</b> ' + esc(p.stage) + '</span>');
       meta.push('<span><b>문서</b> ' + esc(p.doc_count) + '건</span>');
       more = '<div class="pmore">' +
         '<div class="pcols">' +
@@ -578,10 +581,10 @@
         '<span class="opn">' + (open ? '접기 ▲' : '자세히 ▼') + '</span>' +
         (badges.length ? '<div class="pbadges">' + badges.join('') + '</div>' : '') +
         '<div class="nm">' + esc(p.name) + '</div>' +
-        '<div class="wh">' + esc([p.org, p.period].filter(Boolean).join(' · ')) + '</div>' +
+        '<div class="wh">' + esc([orgName(p.org), p.period].filter(Boolean).join(' · ')) + '</div>' +
         (p.role ? '<div class="duty"><b>담당</b>' + esc(p.role) + '</div>' : '') +
         (p.headline && open ? '<div class="headline" style="margin-top:12px">' + esc(p.headline) + '</div>' : '') +
-        (open && p.summary ? '<p class="sm">' + esc(p.summary) + '</p>' : '') +
+        (p.summary ? '<p class="sm">' + esc(p.summary) + '</p>' : '') +
         (p.plain ? '<div class="mini-plain"><b style="display:block;font-size:11px;color:var(--accent);margin-bottom:3px">쉽게 말하면</b>' + esc(p.plain) + '</div>' : '') +
         (open && tags ? '<div class="mini-tags">' + tags + '</div>' : '') +
       '</button>' + more +
