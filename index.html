@@ -159,6 +159,9 @@
     display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center}
   footer a{font-weight:500}
   [hidden]{display:none!important}
+  .booklink{margin:18px 0 0;font-size:15px}
+  .booklink a{font-weight:600}
+  .booklink span{color:var(--muted);font-size:13px;margin-left:8px}
 
   @media (max-width:640px){
     .wrap{padding:24px 16px 64px}
@@ -184,6 +187,7 @@
     <section class="hero" id="hero" hidden></section>
   </header>
 
+  <p class="booklink"><a href="study.html">로봇 SW 이론 심화 교재 18장 &rsaquo;</a><span>기구학·제어부터 비전·학습까지. 쉬운 설명, 연습문제, 면접 문항 포함</span></p>
   <div class="modes">
     <button class="mode" type="button" data-mode="projects" aria-pressed="true">프로젝트</button>
     <button class="mode" type="button" data-mode="docs" aria-pressed="false">문서 전체</button>
@@ -531,6 +535,7 @@
     var parts = [];
     if (site.visibility) parts.push(site.visibility === 'private' ? '비공개 저장소' : '공개 저장소');
     parts.push('프로젝트 ' + projects.length + '건 · 문서 ' + entries.length + '건');
+    parts.push('<a href="study.html">이론 심화 교재 18장</a>');
     if (site.updated) parts.push('최근 문서 ' + esc(site.updated));
     var c = (site.hero && site.hero.contact) || {};
     if (httpUrl(c.github)) parts.push('<a href="' + esc(httpUrl(c.github)) + '" rel="noopener">GitHub</a>');

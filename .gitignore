@@ -14,6 +14,7 @@
 !notes/*.md
 !index.html
 !viewer.html
+!study.html
 !manifest.json
 !manifest.js
 !site.json
