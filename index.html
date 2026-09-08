@@ -160,6 +160,12 @@
   footer a{font-weight:500}
   [hidden]{display:none!important}
   .booklink{margin:18px 0 0;font-size:15px}
+  .pplain{background:var(--accent-soft);border-radius:8px;padding:11px 13px;margin:0 0 12px;font-size:14px}
+  .pplain b{display:block;font-size:12px;color:var(--accent);margin-bottom:3px;letter-spacing:.03em}
+  .pchap{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 14px}
+  .pchap .lb{font-size:12px;color:var(--muted)}
+  .pchap a{font-size:13px;border:1px solid var(--border);border-radius:999px;padding:2px 10px;color:var(--text)}
+  .pchap a:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
   .booklink a{font-weight:600}
   .booklink span{color:var(--muted);font-size:13px;margin-left:8px}
 
@@ -235,6 +241,11 @@
   var trackbar = document.getElementById('trackbar');
   var gloss = document.getElementById('gloss');
   var GLOSS = (site.glossary && site.glossary.terms) || [];
+  // 이론 심화 교재 장 목록. build_textbook.py 가 site.json 에 써 넣는다.
+  var BOOKINFO = site.book || {};
+  var BOOKPATH = BOOKINFO.path || 'study.html';
+  var CHAPTERS = {};
+  (BOOKINFO.chapters || []).forEach(function (c) { CHAPTERS[c.no] = c.title; });
   // 용어 사전의 한정 문구(정식 정의가 아니라는 안내)를 목록 앞에 보여준다 (Codex 4차 20번).
   var GLOSS_NOTE = (site.glossary && site.glossary.note) || '';
   var CRED = site.credentials || {};
@@ -375,6 +386,17 @@
   }
 
   // 카드: 제목·기간 → 역할·단계 → 성과 → 요약 → 기술 → 사례 읽기 → 관련 문서
+  // 사례에서 이론으로 넘어가는 링크. 교재에 없는 번호는 버린다.
+  function chapterChips(p) {
+    var list = (p.chapters || []).filter(function (n) { return CHAPTERS[n]; });
+    if (!list.length) return '';
+    return '<div class="pchap"><span class="lb">연결된 교재 장</span>' +
+      list.map(function (n) {
+        return '<a href="' + esc(BOOKPATH) + '#ch' + encodeURIComponent(n) + '">' +
+               n + '장 · ' + esc(CHAPTERS[n]) + '</a>';
+      }).join('') + '</div>';
+  }
+
   function projectCard(p, i, grouped) {
     var meta = [];
     if (p.org && !grouped) meta.push('<span><b>소속</b> ' + esc(p.org) + '</span>');
@@ -396,6 +418,8 @@
       '<div class="pmeta">' + meta.join('') + '</div>' +
       (p.headline ? '<div class="headline">' + esc(p.headline) + '</div>' : '') +
       (p.summary ? '<p class="psum">' + esc(p.summary) + '</p>' : '') +
+      (p.plain ? '<div class="pplain"><b>쉽게 말하면</b>' + esc(p.plain) + '</div>' : '') +
+      chapterChips(p) +
       (chips ? '<div class="chips">' + chips + '</div>' : '') +
       '<div class="pactions">' +
         (p.main ? '<a class="btn primary" href="' + href(p.main) + '">사례 읽기</a>' : '') +

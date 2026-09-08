@@ -27,6 +27,8 @@ DEFAULT_SECTIONS = [
 ]
 
 FM_RE = re.compile(r"^---[ \t]*\r?\n(.*?)\r?\n---[ \t]*\r?\n", re.S)
+# 본문의 "쉽게 말하면" 인용문. 카드에 미리보기로 쓴다. 문서마다 형식이 같다(guides/REPORT_GUIDE.md).
+PLAIN_RE = re.compile(r"^>[ \t]*\*\*쉽게 말하면\*\*[ \t]*\r?\n((?:^>.*\r?\n?)*)", re.M)
 DATE_RE = re.compile(r"(20\d{2})[-_.]?(0[1-9]|1[0-2])[-_.]?(0[1-9]|[12]\d|3[01])")
 LIST_ITEM_RE = re.compile(r"^\s*-\s+(.*)$")
 
@@ -250,9 +252,32 @@ def collect():
                     "tags": as_list(meta.get("tags")),
                     "stack": as_list(meta.get("stack")),
                     "summary": str(meta.get("summary") or "").strip() or summarize(body),
+                    "plain": extract_plain(body),
+                    # 이 사례와 이어지는 이론 심화 교재 장 번호. 예: chapters: [5, 17]
+                    "chapters": [n for n in (to_int(x) for x in as_list(meta.get("chapters"))) if n],
                 })
     entries.sort(key=lambda e: (e["date"], e["title"]), reverse=True)
     return entries
+
+
+def to_int(v):
+    try:
+        return int(str(v).strip())
+    except (TypeError, ValueError):
+        return 0
+
+
+def extract_plain(body):
+    """본문의 "쉽게 말하면" 인용문을 한 덩이 문장으로 돌려준다. 없으면 빈 문자열."""
+    m = PLAIN_RE.search(body or "")
+    if not m:
+        return ""
+    out = []
+    for line in m.group(1).splitlines():
+        line = line.lstrip(">").strip()
+        if line:
+            out.append(line)
+    return " ".join(out)[:400]
 
 
 def build_projects(entries):
@@ -264,7 +289,7 @@ def build_projects(entries):
     def new_bucket(name):
         return {
             "name": name, "org": "", "track": "", "period": "", "role": "", "stage": "",
-            "headline": "", "summary": "", "stack": [], "tags": [],
+            "headline": "", "summary": "", "plain": "", "chapters": [], "stack": [], "tags": [],
             "main": None, "docs": [], "dates": [],
         }
 
@@ -281,8 +306,8 @@ def build_projects(entries):
                     b[f].append(v)
         if e["category"] == "projects" and b["main"] is None:
             b["main"] = e["path"]
-            for f in ("org", "track", "period", "role", "stage", "headline", "summary"):
-                if e[f]:
+            for f in ("org", "track", "period", "role", "stage", "headline", "summary", "plain", "chapters"):
+                if e.get(f):
                     b[f] = e[f]
         else:
             b["docs"].append({
@@ -357,6 +382,10 @@ def main():
         site_out["credentials"] = SITE["credentials"]
     if SITE.get("glossary"):
         site_out["glossary"] = SITE["glossary"]
+    # book: 이론 심화 교재 장 목록. build_textbook.py 가 site.json 에 써 넣는다.
+    # 첫 화면의 "연결된 교재 장" 칩이 번호를 제목으로 바꿀 때 쓴다.
+    if isinstance(SITE.get("book"), dict) and SITE["book"].get("chapters"):
+        site_out["book"] = SITE["book"]
     manifest = {
         "site": site_out,
         "sections": [{"key": k, "label": l, "description": d} for k, l, d in SECTIONS],
