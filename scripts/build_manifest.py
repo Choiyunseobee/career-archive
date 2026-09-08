@@ -74,6 +74,11 @@ def load_site():
                             for k in ("org", "date", "period", "hours", "detail", "project"))
                     for i in g["items"])
             for g in groups)
+        # 화면이 읽는 최상위 note 도 검증한다. 검증 목록과 렌더 목록이 어긋나면
+        # 객체가 그대로 esc() 를 거쳐 "[object Object]" 로 나온다 (Codex 6차).
+        if ok and not isinstance(creds.get("note", ""), str):
+            print("[!] site.json 의 credentials.note 는 문자열이어야 합니다.", file=sys.stderr)
+            ok = False
         if not ok:
             # 조용히 기본값으로 넘어가면 화면에서 통째로 사라진 것을 눈치채기 어렵다.
             print("[!] site.json 의 credentials 형식이 맞지 않습니다. "
@@ -97,6 +102,9 @@ def load_site():
                         for t in terms)):
             print("[!] site.json 의 glossary 형식이 맞지 않습니다. "
                   "{terms: [{t, e, d}]} 여야 합니다. 무시합니다.", file=sys.stderr)
+            gl = None
+        elif not isinstance(gl.get("note", ""), str):
+            print("[!] site.json 의 glossary.note 는 문자열이어야 합니다.", file=sys.stderr)
             gl = None
         else:
             print("    glossary: 용어 %d개" % len(terms))
@@ -624,7 +632,22 @@ def main():
     }
     # 랜딩 히어로 (site.json 의 hero: tagline, metrics[], contact{}). 없으면 페이지도 그리지 않는다.
     if isinstance(SITE.get("hero"), dict):
-        site_out["hero"] = SITE["hero"]
+        hero = dict(SITE["hero"])
+        # metrics 가 배열이 아니거나 항목이 객체가 아니면 renderHero 가 예외로 죽고
+        # 첫 화면 전체가 그리다 만다. 여기서 걸러 통째로 빼는 편이 낫다 (Codex 6차).
+        mets = hero.get("metrics")
+        if mets is not None and not (isinstance(mets, list) and all(
+                isinstance(m, dict) and isinstance(m.get("value", ""), str)
+                and isinstance(m.get("label", ""), str)
+                and isinstance(m.get("note", ""), str) for m in mets)):
+            print("[!] site.json 의 hero.metrics 형식이 맞지 않습니다. 빼고 만듭니다.",
+                  file=sys.stderr)
+            hero.pop("metrics", None)
+        if not isinstance(hero.get("tagline", ""), str):
+            print("[!] site.json 의 hero.tagline 은 문자열이어야 합니다. 빼고 만듭니다.",
+                  file=sys.stderr)
+            hero.pop("tagline", None)
+        site_out["hero"] = hero
     if SITE.get("org_order"):
         site_out["org_order"] = SITE["org_order"]
     if SITE.get("credentials"):

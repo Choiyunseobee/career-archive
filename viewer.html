@@ -74,6 +74,7 @@
   /* '쉽게 말하면' 은 비전공자용 요약이라 본문 인용과 구분해 눈에 먼저 들어오게 한다. */
   article blockquote.plain{background:var(--accent-soft);border-left-color:var(--accent);
     border-radius:0 8px 8px 0;padding:14px 18px;margin-bottom:24px}
+  article a.deadlink{color:var(--muted);text-decoration:line-through;cursor:not-allowed}
   article blockquote.plain > p:first-child{font-size:14px;font-weight:600;color:var(--accent);
     margin-bottom:8px}
   article img{max-width:100%;border-radius:8px}
@@ -202,32 +203,53 @@
 
   // 문서 안 상대 링크는 그 문서가 있는 폴더 기준이다.
   // 페이지 주소가 viewer.html 이라 그냥 두면 저장소 루트에서 찾아 404 가 난다.
-  // 다른 마크다운 문서를 가리키면 뷰어 주소로, 그 밖은 실제 파일 경로로 바꾼다.
+  //
+  // 직접 문자열을 자르지 않고 URL 로 푼다. 문자열로 "../" 를 지우면
+  // "../javascript:alert(1)" 이 "javascript:alert(1)" 이 되어 실행 가능한 스킴이 만들어진다.
+  // DOMPurify 정화는 이 재작성보다 먼저 끝나므로 최종 주소를 막아주지 못한다 (Codex 6차 중대).
   function relinkDocs() {
-    var dir = String(entry.path || '').replace(/[^/]*$/, '');   // "projects/"
+    var siteRoot = new URL('.', location.href);            // .../career-archive/
+    var docBase;
+    try { docBase = new URL(entry.path, siteRoot); } catch (e) { return; }
+
+    function drop(a, why) {
+      a.removeAttribute('href');
+      a.title = why;
+      a.classList.add('deadlink');
+    }
+
     Array.prototype.forEach.call(doc.querySelectorAll('a[href]'), function (a) {
       var raw = a.getAttribute('href');
-      if (!raw || /^([a-z][a-z0-9+.-]*:|\/\/|#|\/)/i.test(raw)) return;  // 절대·앵커는 그대로
-      var hash = '';
-      var i = raw.indexOf('#');
-      if (i >= 0) { hash = raw.slice(i); raw = raw.slice(0, i); }
-      if (!raw) return;                                          // "#절" 만 있는 링크
-      var target = normalize(dir + raw);
-      a.setAttribute('href', /\.md$/i.test(target)
-        ? 'viewer.html?p=' + encodeURIComponent(target) + hash
-        : target + hash);
-    });
-  }
+      if (!raw) return;
+      if (raw.charAt(0) === '#') return;                   // 같은 문서 안 앵커
 
-  // "a/b/../c.md" 처럼 상위로 올라가는 경로를 정리한다.
-  function normalize(path) {
-    var out = [];
-    path.split('/').forEach(function (seg) {
-      if (!seg || seg === '.') return;
-      if (seg === '..') { out.pop(); return; }
-      out.push(seg);
+      var u;
+      try { u = new URL(raw, docBase); } catch (e) { drop(a, '주소를 해석하지 못했습니다'); return; }
+
+      var isAbsolute = /^[a-z][a-z0-9+.-]*:/i.test(raw) || raw.slice(0, 2) === '//';
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') {
+        drop(a, 'http(s) 가 아닌 주소라 연결하지 않았습니다: ' + raw);
+        return;
+      }
+      if (isAbsolute) return;                              // 바깥 링크는 그대로 둔다
+
+      var root = siteRoot.pathname;
+      if (u.origin !== location.origin || u.pathname.indexOf(root) !== 0) {
+        // 저장소 밖으로 나가는 상대 경로. 조용히 다른 파일로 바꾸지 않는다.
+        drop(a, '저장소 밖을 가리켜 연결하지 않았습니다: ' + raw);
+        return;
+      }
+
+      var rel;
+      try { rel = decodeURIComponent(u.pathname.slice(root.length)); }
+      catch (e) { drop(a, '경로 인코딩을 해석하지 못했습니다: ' + raw); return; }
+      if (!rel) return;
+
+      // 쿼리는 pathname 에 들어가지 않으므로 "foo.md?x=1" 도 마크다운으로 잡힌다.
+      a.setAttribute('href', /\.md$/i.test(rel)
+        ? 'viewer.html?p=' + encodeURIComponent(rel) + u.hash
+        : u.pathname + u.search + u.hash);
     });
-    return out.join('/');
   }
 
   // 렌더 뒤 손질: 표 감싸기와 숫자 열 오른쪽 정렬, H2 목차
