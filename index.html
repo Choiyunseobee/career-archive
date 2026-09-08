@@ -206,6 +206,8 @@
   .pbadges span.tk{border-color:transparent;background:var(--accent-soft);color:var(--accent);font-weight:600}
   .pmini .nm{font-weight:600;font-size:17px;line-height:1.35}
   .pmini .wh{font-size:13px;color:var(--muted);margin-top:4px}
+  .pmini .duty{font-size:13.5px;margin-top:8px;line-height:1.6}
+  .pmini .duty b{color:var(--muted);font-size:12px;font-weight:600;margin-right:5px}
   .pmini .sm{font-size:14px;margin:9px 0 0;line-height:1.65}
   .pmini .mini-plain{font-size:13.5px;background:var(--accent-soft);border-radius:7px;padding:10px 12px;
     margin-top:10px;line-height:1.65}
@@ -226,6 +228,14 @@
   details.ivq .iva{padding:13px 15px;white-space:pre-line;font-size:15px}
   details.ivq .ivfu{margin:0 15px 13px;padding-top:10px;border-top:1px dashed var(--border);font-size:13px;color:var(--muted)}
   details.ivq .ivfu b{color:var(--text);font-size:12px;display:block;margin-bottom:4px}
+  details.ivq .ivfu b{margin-bottom:7px}
+  details.fud{border:1px solid var(--border);border-radius:7px;margin:0 0 6px;background:var(--bg)}
+  details.fud summary{cursor:pointer;padding:9px 12px;font-size:13.5px;color:var(--text);list-style:none;line-height:1.5}
+  details.fud summary::-webkit-details-marker{display:none}
+  details.fud summary::before{content:'▸ ';color:var(--muted)}
+  details.fud[open] summary::before{content:'▾ '}
+  details.fud .fua{padding:0 12px 11px;font-size:13.5px;color:var(--text);white-space:pre-line;line-height:1.7}
+  .fuq{font-size:13px;margin:0 0 5px}
   .credgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
   .credcard{border:1px solid var(--border);border-radius:9px;padding:13px 15px;background:var(--surface)}
   .credcard .cn{font-weight:600;font-size:15px;line-height:1.4}
@@ -545,7 +555,7 @@
     var more = '';
     if (open) {
       var meta = [];
-      if (p.role) meta.push('<span><b>역할</b> ' + esc(p.role) + '</span>');
+      if (p.stage) meta.push('<span><b>단계</b> ' + esc(p.stage) + '</span>');
       meta.push('<span><b>문서</b> ' + esc(p.doc_count) + '건</span>');
       more = '<div class="pmore">' +
         '<div class="pcols">' +
@@ -569,10 +579,11 @@
         (badges.length ? '<div class="pbadges">' + badges.join('') + '</div>' : '') +
         '<div class="nm">' + esc(p.name) + '</div>' +
         '<div class="wh">' + esc([p.org, p.period].filter(Boolean).join(' · ')) + '</div>' +
-        (p.headline && open ? '<div class="headline" style="margin-top:10px">' + esc(p.headline) + '</div>' : '') +
-        (p.summary ? '<p class="sm">' + esc(p.summary) + '</p>' : '') +
+        (p.role ? '<div class="duty"><b>담당</b>' + esc(p.role) + '</div>' : '') +
+        (p.headline && open ? '<div class="headline" style="margin-top:12px">' + esc(p.headline) + '</div>' : '') +
+        (open && p.summary ? '<p class="sm">' + esc(p.summary) + '</p>' : '') +
         (p.plain ? '<div class="mini-plain"><b style="display:block;font-size:11px;color:var(--accent);margin-bottom:3px">쉽게 말하면</b>' + esc(p.plain) + '</div>' : '') +
-        (tags ? '<div class="mini-tags">' + tags + '</div>' : '') +
+        (open && tags ? '<div class="mini-tags">' + tags + '</div>' : '') +
       '</button>' + more +
     '</div>';
   }
@@ -738,7 +749,11 @@
             return '<details class="ivq"><summary>' + esc(it.q) + '</summary>' +
               '<div class="iva">' + esc(it.a) + '</div>' +
               ((it.fu || []).length ? '<div class="ivfu"><b>이어서 받을 수 있는 질문</b>' +
-                 it.fu.map(function (f) { return esc(f); }).join('<br>') + '</div>' : '') +
+                 it.fu.map(function (f) {
+                   if (typeof f === 'string') return '<div class="fuq">' + esc(f) + '</div>';
+                   return '<details class="fud"><summary>' + esc(f.q) + '</summary>' +
+                          '<div class="fua">' + esc(f.a) + '</div></details>';
+                 }).join('') + '</div>' : '') +
             '</details>';
           }).join('');
         }).join('');
