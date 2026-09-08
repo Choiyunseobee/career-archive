@@ -232,6 +232,7 @@ def collect():
                 if raw is None:
                     continue
                 meta, body = parse_frontmatter(raw, rel)
+                SEC = split_sections(body)
                 group = os.path.relpath(dirpath, base).replace(os.sep, "/")
                 entries.append({
                     "title": str(meta.get("title") or first_heading(body) or name[:-3])[:120],
@@ -253,11 +254,125 @@ def collect():
                     "stack": as_list(meta.get("stack")),
                     "summary": str(meta.get("summary") or "").strip() or summarize(body),
                     "plain": extract_plain(body),
+                    # 카드를 펼쳤을 때 보여줄 것. 본문 절에서 뽑으므로 문서를 고치면 함께 바뀐다.
+                    "problem": items(pick(SEC, "문제", "개요")),
+                    "action": items(pick(SEC, "한 일", "실험 설계", "검토와 판단")),
+                    "result": items(pick(SEC, "결과")),
+                    "learned": items(pick(SEC, "다시 한다면", "배운 것", "남은 기록")),
+                    "metrics": metrics_from(pick(SEC, "결과")),
                     # 이 사례와 이어지는 이론 심화 교재 장 번호. 예: chapters: [5, 17]
                     "chapters": [n for n in (to_int(x) for x in as_list(meta.get("chapters"))) if n],
                 })
     entries.sort(key=lambda e: (e["date"], e["title"]), reverse=True)
     return entries
+
+
+H2_RE = re.compile(r"^##[ \t]+(.+?)[ \t]*$", re.M)
+MD_LINK_RE = re.compile(r"\[([^\]]+)\]\([^)]*\)")
+
+
+def clean_md(t):
+    """표시용으로 마크다운 표시를 없앤다."""
+    t = MD_LINK_RE.sub(r"\1", t)
+    for ch in ("**", "`", "__"):
+        t = t.replace(ch, "")
+    return " ".join(t.split())
+
+
+def split_sections(body):
+    """'## 제목' 단위로 본문을 쪼갠다. {제목: 내용}."""
+    out, marks = {}, list(H2_RE.finditer(body or ""))
+    for i, m in enumerate(marks):
+        end = marks[i + 1].start() if i + 1 < len(marks) else len(body)
+        out[m.group(1).strip()] = body[m.end():end]
+    return out
+
+
+def pick(sections, *names):
+    """이름 순서대로 고른다. 한 이름에 대해 정확 일치를 먼저 보고, 없으면 그 말로 시작하는 절.
+    이름 순서가 우선이어야 한다. 그렇지 않으면 뒤 이름의 정확 일치가 앞 이름을 눌러 버린다."""
+    for n in names:
+        if n in sections:
+            return sections[n]
+        for k in sections:
+            if k.startswith(n):
+                return sections[k]
+    return ""
+
+
+def bullets(text, limit=8):
+    """맨 앞 '- ' 목록만 뽑는다. 들여쓴 하위 항목은 앞 항목에 붙인다."""
+    out = []
+    for line in (text or "").splitlines():
+        if line.startswith(("- ", "* ")):
+            out.append(clean_md(line[2:]))
+        elif line.startswith(("  - ", "  ")) and out and line.strip():
+            out[-1] += " " + clean_md(line)
+        if len(out) >= limit:
+            break
+    return [b for b in out if b]
+
+
+def paragraphs(text, limit=3):
+    """목록이 없는 절은 문단 단위로 읽는다. 표·인용·목록 줄은 건너뛴다."""
+    out, buf = [], []
+
+    def flush():
+        if buf:
+            out.append(clean_md(" ".join(buf)))
+            del buf[:]
+
+    for line in (text or "").splitlines():
+        st = line.strip()
+        if not st:
+            flush()
+            continue
+        if st.startswith(("|", ">", "#", "- ", "* ")):
+            flush()
+            continue
+        buf.append(st)
+    flush()
+    return [x for x in out if x][:limit]
+
+
+def items(text, limit=8):
+    """목록이 있으면 목록, 없으면 문단."""
+    b = bullets(text, limit)
+    return b if b else paragraphs(text)
+
+
+def first_table(text):
+    """첫 표를 행 목록으로. 구분선(---)은 버린다."""
+    rows = []
+    for line in (text or "").splitlines():
+        line = line.strip()
+        if line.startswith("|"):
+            cells = [c.strip() for c in line.strip("|").split("|")]
+            if all(set(c) <= set("-: ") for c in cells):
+                continue
+            rows.append([clean_md(c) for c in cells])
+        elif rows:
+            break
+    return rows
+
+
+def metrics_from(text, limit=4):
+    """결과 표를 (지표, 전, 후) 로 읽어 핵심 숫자를 만든다. 표에 없는 값은 만들지 않는다."""
+    rows = first_table(text)
+    if len(rows) < 2:
+        return []
+    out = []
+    for r in rows[1:]:
+        if len(r) < 3 or not r[0]:
+            continue
+        before, after = r[1], r[2]
+        if not after:
+            continue
+        val = (before + " → " + after) if before and before != "—" else after
+        out.append({"label": r[0], "value": val, "note": r[3] if len(r) > 3 else ""})
+        if len(out) >= limit:
+            break
+    return out
 
 
 def to_int(v):
@@ -290,6 +405,7 @@ def build_projects(entries):
         return {
             "name": name, "org": "", "track": "", "period": "", "role": "", "stage": "",
             "headline": "", "summary": "", "plain": "", "chapters": [], "stack": [], "tags": [],
+            "problem": [], "action": [], "result": [], "learned": [], "metrics": [],
             "main": None, "docs": [], "dates": [],
         }
 
@@ -306,7 +422,8 @@ def build_projects(entries):
                     b[f].append(v)
         if e["category"] == "projects" and b["main"] is None:
             b["main"] = e["path"]
-            for f in ("org", "track", "period", "role", "stage", "headline", "summary", "plain", "chapters"):
+            for f in ("org", "track", "period", "role", "stage", "headline", "summary", "plain", "chapters",
+                      "problem", "action", "result", "learned", "metrics"):
                 if e.get(f):
                     b[f] = e[f]
         else:

@@ -178,20 +178,37 @@
   .ov-tracks button:hover{border-color:var(--accent);color:var(--accent)}
   .ov-tracks b{font-size:18px;font-variant-numeric:tabular-nums;margin-right:6px}
   /* 프로젝트 카드 격자 */
-  .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px;margin:0 0 8px}
-  button.pmini{display:block;width:100%;text-align:left;font:inherit;color:var(--text);cursor:pointer;
-    background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
-  button.pmini:hover{border-color:var(--accent)}
-  button.pmini:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;
+    margin:0 0 8px;align-items:start}
+  .pmini{background:var(--surface);border:1px solid var(--border);border-radius:10px}
+  .pmini:hover{border-color:var(--control-border)}
+  .pmini.open{grid-column:1 / -1;border-color:var(--accent)}
+  button.phead2{display:block;width:100%;text-align:left;font:inherit;color:var(--text);
+    cursor:pointer;background:none;border:none;padding:16px}
+  button.phead2:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  .pmini .opn{float:right;font-size:12px;color:var(--muted);margin-left:8px}
+  /* 펼친 내용 */
+  .pmore{padding:0 16px 18px}
+  .pcols{display:grid;grid-template-columns:1fr 1fr;gap:18px 30px;padding-top:16px;
+    border-top:1px solid var(--border)}
+  @media (max-width:760px){.pcols{grid-template-columns:1fr;gap:16px}}
+  .pcol h4{font-size:12px;font-weight:600;letter-spacing:.05em;color:var(--muted);margin:0 0 8px}
+  .pcol ul{margin:0;padding-left:17px}
+  .pcol li{margin:6px 0;font-size:14px;line-height:1.65}
+  .pcol li::marker{color:var(--accent)}
+  .mchips{display:flex;flex-wrap:wrap;gap:8px}
+  .mchip{background:var(--surface2);border-radius:8px;padding:9px 13px;min-width:104px}
+  .mchip .v{font-weight:700;font-size:16px;font-variant-numeric:tabular-nums;line-height:1.3}
+  .mchip .l{font-size:12px;color:var(--muted);margin-top:3px}
+  .mchip .n{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5}
   .pbadges{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}
   .pbadges span{font-size:12px;border-radius:4px;padding:1px 7px;border:1px solid var(--border);color:var(--muted)}
   .pbadges span.tk{border-color:transparent;background:var(--accent-soft);color:var(--accent);font-weight:600}
   .pmini .nm{font-weight:600;font-size:17px;line-height:1.35}
   .pmini .wh{font-size:13px;color:var(--muted);margin-top:4px}
-  .pmini .sm{font-size:14px;margin:9px 0 0;display:-webkit-box;-webkit-line-clamp:3;
-    -webkit-box-orient:vertical;overflow:hidden}
-  .pmini .mini-plain{font-size:13px;background:var(--accent-soft);border-radius:7px;padding:9px 11px;
-    margin-top:10px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .pmini .sm{font-size:14px;margin:9px 0 0;line-height:1.65}
+  .pmini .mini-plain{font-size:13.5px;background:var(--accent-soft);border-radius:7px;padding:10px 12px;
+    margin-top:10px;line-height:1.65}
   .pmini .mini-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
   .pmini .mini-tags span{font-size:12px;color:var(--muted);background:var(--surface2);border-radius:4px;padding:1px 6px}
   .backlist{display:inline-block;margin:0 0 14px;font-size:14px;background:none;border:none;
@@ -493,26 +510,80 @@
     });
   }
 
-  // 격자에 놓는 짧은 카드. 자세한 것은 눌러서 본다.
-  function projectMini(p) {
+  function col(title, arr) {
+    if (!arr || !arr.length) return '';
+    return '<div class="pcol"><h4>' + esc(title) + '</h4><ul>' +
+      arr.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>';
+  }
+
+  function metricCol(p) {
+    var ms = p.metrics || [];
+    if (!ms.length) return '';
+    return '<div class="pcol"><h4>핵심 숫자</h4><div class="mchips">' +
+      ms.map(function (m) {
+        return '<div class="mchip"><div class="v">' + esc(m.value) + '</div>' +
+               '<div class="l">' + esc(m.label) + '</div>' +
+               (m.note ? '<div class="n">' + esc(m.note) + '</div>' : '') + '</div>';
+      }).join('') + '</div></div>';
+  }
+
+  // 격자에 놓는 카드. 누르면 그 자리에서 커지고, 중요한 절이 바로 보인다.
+  function projectMini(p, i) {
+    var open = state.open === p.name;
     var badges = [];
     if (p.track) badges.push('<span class="tk">' + esc(p.track) + '</span>');
     if (p.stage) badges.push('<span>' + esc(p.stage) + '</span>');
-    var tags = (p.stack || []).slice(0, 5).map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('');
-    return '<button class="pmini" type="button" data-open="' + esc(p.name) + '">' +
-      (badges.length ? '<div class="pbadges">' + badges.join('') + '</div>' : '') +
-      '<div class="nm">' + esc(p.name) + '</div>' +
-      '<div class="wh">' + esc([p.org, p.period].filter(Boolean).join(' · ')) + '</div>' +
-      (p.summary ? '<p class="sm">' + esc(p.summary) + '</p>' : '') +
-      (p.plain ? '<div class="mini-plain">' + esc(p.plain) + '</div>' : '') +
-      (tags ? '<div class="mini-tags">' + tags + '</div>' : '') +
-    '</button>';
+    var tags = (p.stack || []).concat(p.tags || [])
+      .filter(function (v, j, a) { return a.indexOf(v) === j; })
+      .map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('');
+    var idx = projects.indexOf(p);
+    var docs = (p.docs || []).map(function (d) {
+      return '<a href="' + href(d.path) + '"><span class="t">' + esc(d.title) + '</span>' +
+             '<span class="d">' + esc(d.category_label) + ' · ' + esc(d.date) + '</span></a>';
+    }).join('');
+
+    var more = '';
+    if (open) {
+      var meta = [];
+      if (p.role) meta.push('<span><b>역할</b> ' + esc(p.role) + '</span>');
+      meta.push('<span><b>문서</b> ' + esc(p.doc_count) + '건</span>');
+      more = '<div class="pmore">' +
+        '<div class="pcols">' +
+          col('문제', p.problem) + col('한 일', p.action) +
+          col('결과', p.result) + metricCol(p) +
+          col('배운 것', p.learned) +
+          (chapterChips(p) ? '<div class="pcol"><h4>연결된 교재 장</h4>' + chapterChips(p) + '</div>' : '') +
+        '</div>' +
+        '<div class="pmeta" style="margin-top:16px">' + meta.join('') + '</div>' +
+        '<div class="pactions">' +
+          (p.main ? '<a class="btn primary" href="' + href(p.main) + '">사례 읽기</a>' : '') +
+          (docs ? '<button class="btn" type="button" data-toggle="' + idx + '" aria-expanded="false">관련 문서 ' + (p.docs || []).length + '건 보기</button>' : '') +
+        '</div>' +
+        (docs ? '<div class="docs" id="docs-' + idx + '" hidden>' + docs + '</div>' : '') +
+      '</div>';
+    }
+
+    return '<div class="pmini' + (open ? ' open' : '') + '">' +
+      '<button class="phead2" type="button" data-open="' + esc(p.name) + '" aria-expanded="' + open + '">' +
+        '<span class="opn">' + (open ? '접기 ▲' : '자세히 ▼') + '</span>' +
+        (badges.length ? '<div class="pbadges">' + badges.join('') + '</div>' : '') +
+        '<div class="nm">' + esc(p.name) + '</div>' +
+        '<div class="wh">' + esc([p.org, p.period].filter(Boolean).join(' · ')) + '</div>' +
+        (p.headline && open ? '<div class="headline" style="margin-top:10px">' + esc(p.headline) + '</div>' : '') +
+        (p.summary ? '<p class="sm">' + esc(p.summary) + '</p>' : '') +
+        (p.plain ? '<div class="mini-plain"><b style="display:block;font-size:11px;color:var(--accent);margin-bottom:3px">쉽게 말하면</b>' + esc(p.plain) + '</div>' : '') +
+        (tags ? '<div class="mini-tags">' + tags + '</div>' : '') +
+      '</button>' + more +
+    '</div>';
   }
 
   // 카드 클릭(상세 열기), 목록으로 돌아가기, 관련 문서 펼치기를 한 곳에서 묶는다.
   function bindProjectEvents() {
     Array.prototype.forEach.call(plist.querySelectorAll('[data-open]'), function (b) {
-      b.onclick = function () { state.open = b.dataset.open; render(); };
+      b.onclick = function () {
+        state.open = (state.open === b.dataset.open) ? null : b.dataset.open;
+        render();
+      };
     });
     Array.prototype.forEach.call(plist.querySelectorAll('[data-back]'), function (b) {
       b.onclick = function () { state.open = null; render(); };
@@ -638,12 +709,12 @@
     var isGloss = state.mode === 'glossary';
     var showTags = !isCred && !isGloss && tagNames.length > 0 && (state.mode === 'docs' || state.tagsOpen || !!state.tag);
     tagbar.hidden = !showTags;
-    tagtoggle.hidden = state.mode !== 'projects' || !!state.open || tagNames.length === 0;
+    tagtoggle.hidden = state.mode !== 'projects' || tagNames.length === 0;
     tagtoggle.setAttribute('aria-expanded', String(showTags));
     tagtoggle.textContent = (showTags ? '기술 태그 접기' : '기술 태그 보기') + ' (' + tagNames.length + ')';
     // 학력·자격·교육은 목록이 짧고 고정이라 검색·태그 필터를 걸지 않는다.
-    document.querySelector('.controls').hidden = isCred || isGloss || isOv || isIv || !!state.open;
-    trackbar.hidden = state.mode !== 'projects' || !!state.open || trackbar.childElementCount === 0;
+    document.querySelector('.controls').hidden = isCred || isGloss || isOv || isIv;
+    trackbar.hidden = state.mode !== 'projects' || trackbar.childElementCount === 0;
     Array.prototype.forEach.call(trackbar.querySelectorAll('button'), function (b) {
       b.setAttribute('aria-pressed', String((b.dataset.track || null) === (state.track || null)));
     });
@@ -693,19 +764,14 @@
     } else if (state.mode === 'projects') {
       grid.hidden = true; plist.hidden = false;
       var list = projects.filter(matchProject);
-      // 카드를 누른 상태면 그 프로젝트만 자세히 보여준다.
-      var opened = state.open ? projects.filter(function (p) { return p.name === state.open; })[0] : null;
-      if (opened) {
-        document.getElementById('count').textContent = '';
-        plist.innerHTML = '<button class="backlist" type="button" data-back="1">← 프로젝트 목록</button>' +
-          projectCard(opened, projects.indexOf(opened), false);
-        bindProjectEvents();
-        return;
-      }
       document.getElementById('count').textContent =
         '프로젝트 ' + list.length + '건' + (list.length !== projects.length ? ' / 전체 ' + projects.length + '건' : '');
       if (!list.length) {
         plist.innerHTML = '<div class="empty">프로젝트가 없습니다. 문서 앞머리에 <code>project: 이름</code> 을 넣으면 여기에 묶입니다.</div>';
+      }
+      if (state.open && !list.some(function (p) { return p.name === state.open; })) state.open = null;
+      if (!list.length) {
+        /* 위에서 이미 처리 */
       } else if (list.some(function (p) { return p.org; })) {
         // 소속(org)별로 묶는다. 순서는 최근 활동순(이미 정렬됨)에서 처음 나온 소속 순.
         var groups = [], seen = Object.create(null);
