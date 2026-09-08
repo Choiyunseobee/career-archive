@@ -231,6 +231,8 @@
   var trackbar = document.getElementById('trackbar');
   var gloss = document.getElementById('gloss');
   var GLOSS = (site.glossary && site.glossary.terms) || [];
+  // 용어 사전의 한정 문구(정식 정의가 아니라는 안내)를 목록 앞에 보여준다 (Codex 4차 20번).
+  var GLOSS_NOTE = (site.glossary && site.glossary.note) || '';
   var CRED = site.credentials || {};
   // groups 는 배열이라 표시 순서가 보존된다. 객체 키였다면 manifest 생성 때 정렬돼 뒤섞인다.
   var CRED_GROUPS = (CRED.groups || []).filter(function (g) {
@@ -464,7 +466,8 @@
     if (isGloss) {
       plist.hidden = true; grid.hidden = true;
       document.getElementById('count').textContent = '용어 ' + GLOSS.length + '개';
-      gloss.innerHTML = GLOSS.map(function (t) {
+      gloss.innerHTML = (GLOSS_NOTE ? '<p class="cred-note">' + esc(GLOSS_NOTE) + '</p>' : '') +
+        GLOSS.map(function (t) {
         return '<dl class="gterm"><dt><b>' + esc(t.t) + '</b>' +
           (t.e ? '<em>' + esc(t.e) + '</em>' : '') + '</dt>' +
           '<dd>' + esc(t.d) + '</dd></dl>';
