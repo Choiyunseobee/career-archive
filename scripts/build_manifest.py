@@ -233,6 +233,7 @@ def collect():
                     continue
                 meta, body = parse_frontmatter(raw, rel)
                 SEC = split_sections(body)
+                warn_unmapped(SEC, rel)
                 group = os.path.relpath(dirpath, base).replace(os.sep, "/")
                 entries.append({
                     "title": str(meta.get("title") or first_heading(body) or name[:-3])[:120],
@@ -255,11 +256,13 @@ def collect():
                     "summary": str(meta.get("summary") or "").strip() or summarize(body),
                     "plain": extract_plain(body),
                     # 카드를 펼쳤을 때 보여줄 것. 본문 절에서 뽑으므로 문서를 고치면 함께 바뀐다.
-                    "problem": items(pick(SEC, "문제", "개요")),
-                    "action": items(pick(SEC, "한 일", "실험 설계", "검토와 판단")),
-                    "result": items(pick(SEC, "결과")),
-                    "learned": items(pick(SEC, "다시 한다면", "배운 것", "남은 기록")),
-                    "metrics": metrics_from(pick(SEC, "결과")),
+                    "problem": items(pick(SEC, "problem")),
+                    "action": items(pick(SEC, "action")),
+                    "result": items(pick(SEC, "result")),
+                    "learned": items(pick(SEC, "learned")),
+                    "contribution": items(pick(SEC, "contribution")),
+                    "limits": items(pick(SEC, "limits")),
+                    "metrics": metrics_from(pick(SEC, "result")),
                     # 이 사례와 이어지는 이론 심화 교재 장 번호. 예: chapters: [5, 17]
                     "chapters": [n for n in (to_int(x) for x in as_list(meta.get("chapters"))) if n],
                 })
@@ -268,7 +271,10 @@ def collect():
 
 
 H2_RE = re.compile(r"^##[ \t]+(.+?)[ \t]*$", re.M)
-MD_LINK_RE = re.compile(r"\[([^\]]+)\]\([^)]*\)")
+# 링크 대상에 괄호가 있어도 끝까지 먹는다. `[x](a(b).md)` 에서 `.md)` 가 남던 문제.
+MD_LINK_RE = re.compile(r"\[([^\]]+)\]\((?:[^()]|\([^()]*\))*\)")
+# 코드 블록. 절을 쪼개기 전에 지운다. 안에 든 `## 결과` 가 진짜 절을 덮었다.
+FENCE_RE = re.compile(r"^(?P<f>```+|~~~+)[^\n]*\n.*?^(?P=f)[ \t]*$\n?", re.M | re.S)
 
 
 def clean_md(t):
@@ -280,24 +286,71 @@ def clean_md(t):
 
 
 def split_sections(body):
-    """'## 제목' 단위로 본문을 쪼갠다. {제목: 내용}."""
-    out, marks = {}, list(H2_RE.finditer(body or ""))
+    """'## 제목' 단위로 본문을 쪼갠다. {제목: 내용}.
+
+    코드 블록은 먼저 지운다. 예제 안의 `## 결과` 가 진짜 결과 절을 덮었다 (5차 19번).
+    같은 제목이 두 번 나오면 뒤가 앞을 덮으므로 알린다.
+    """
+    body = FENCE_RE.sub("", body or "")
+    out, marks = {}, list(H2_RE.finditer(body))
     for i, m in enumerate(marks):
         end = marks[i + 1].start() if i + 1 < len(marks) else len(body)
-        out[m.group(1).strip()] = body[m.end():end]
+        title = m.group(1).strip()
+        if title in out:
+            print("    [!] 같은 절 제목이 두 번 나옵니다: %s" % title, file=sys.stderr)
+        out[title] = body[m.end():end]
     return out
 
 
-def pick(sections, *names):
-    """이름 순서대로 고른다. 한 이름에 대해 정확 일치를 먼저 보고, 없으면 그 말로 시작하는 절.
-    이름 순서가 우선이어야 한다. 그렇지 않으면 뒤 이름의 정확 일치가 앞 이름을 눌러 버린다."""
-    for n in names:
-        if n in sections:
-            return sections[n]
-        for k in sections:
-            if k.startswith(n):
-                return sections[k]
-    return ""
+# 절 제목 → 카드 필드. 접두 일치를 쓰지 않는다.
+# `pick(SEC, "문제")` 가 "문제없이 통과한 조건" 을 골라 "개요" 를 눌렀다 (5차 19번).
+# 새 절 제목을 만들면 아래에 등록한다. 등록하지 않으면 경고가 나온다.
+SECTION_MAP = {
+    "문제": "problem",
+    "개요": "problem",
+    "한 일": "action",
+    "수행 내용": "action",
+    "접근": "action",
+    "검토와 판단": "action",
+    "실험 설계 — 참값이 0인 조건": "action",
+    "화면 설계에서 지킨 것": "action",
+    "결과": "result",
+    "결과 (실습 과제 산정값)": "result",
+    "다시 한다면": "learned",
+    "배운 것": "learned",
+    "남은 기록": "learned",
+    "스스로 정정한 것": "learned",
+    "되돌린 것": "learned",
+    "부수적으로 찾은 것 — 카메라 초점거리 1.5배 오차": "learned",
+    "내 기여": "contribution",
+    "주장하지 않는 것": "limits",
+    "쉽게 정리하면": None,      # 본문에서 읽는다. 카드에 따로 넣지 않는다.
+}
+# 필드마다 절을 붙이는 순서. 앞에 오는 절이 먼저다.
+FIELD_ORDER = {
+    "problem": ["문제", "개요"],
+    "action": ["한 일", "수행 내용", "접근", "실험 설계 — 참값이 0인 조건",
+               "화면 설계에서 지킨 것", "검토와 판단"],
+    "result": ["결과", "결과 (실습 과제 산정값)"],
+    "learned": ["다시 한다면", "배운 것", "남은 기록", "스스로 정정한 것", "되돌린 것",
+                "부수적으로 찾은 것 — 카메라 초점거리 1.5배 오차"],
+    "contribution": ["내 기여"],
+    "limits": ["주장하지 않는 것"],
+}
+
+
+def warn_unmapped(sections, rel):
+    """매핑에 없는 절 제목을 알린다. 조용히 빠지는 것을 막기 위함이다."""
+    for k in sections:
+        if k not in SECTION_MAP:
+            print("    [!] %s: 절 '%s' 가 SECTION_MAP 에 없어 카드에 안 들어갑니다."
+                  % (rel, k), file=sys.stderr)
+
+
+def pick(sections, field):
+    """필드에 해당하는 절 내용을 순서대로 이어 돌려준다. 정확 일치만 본다."""
+    parts = [sections[n] for n in FIELD_ORDER.get(field, []) if n in sections]
+    return "\n\n".join(parts)
 
 
 def bullets(text, limit=8):
@@ -305,11 +358,13 @@ def bullets(text, limit=8):
     out = []
     for line in (text or "").splitlines():
         if line.startswith(("- ", "* ")):
+            # 개수 제한은 새 항목을 시작할 때만 본다. 루프 끝에서 자르면 마지막
+            # 항목의 이어지는 줄이 함께 잘렸다 (5차 19번).
+            if len(out) >= limit:
+                break
             out.append(clean_md(line[2:]))
         elif line.startswith(("  - ", "  ")) and out and line.strip():
             out[-1] += " " + clean_md(line)
-        if len(out) >= limit:
-            break
     return [b for b in out if b]
 
 
@@ -335,10 +390,66 @@ def paragraphs(text, limit=3):
     return [x for x in out if x][:limit]
 
 
-def items(text, limit=8):
-    """목록이 있으면 목록, 없으면 문단."""
-    b = bullets(text, limit)
-    return b if b else paragraphs(text)
+def items(text, limit=10):
+    """문단과 목록을 **문서 순서대로** 함께 돌려준다.
+
+    예전에는 목록이 하나라도 있으면 문단을 전부 버렸다. 운영 UI 의 `## 문제` 는
+    주 문제를 문단으로 쓰고 부수 문제를 목록으로 쓰기 때문에 주 문제가 사라졌다.
+    목록 뒤에 오는 제한 문단(신뢰성 주장 금지 등)도 같은 이유로 빠졌다 (5차 18번).
+    """
+    out, buf = [], []
+
+    def flush():
+        if buf:
+            t = clean_md(" ".join(buf))
+            if t:
+                out.append(t)
+            del buf[:]
+
+    for line in (text or "").splitlines():
+        st = line.strip()
+        if not st:
+            flush()
+            continue
+        if line.startswith(("- ", "* ")):
+            flush()
+            t = clean_md(line[2:])
+            if t:
+                out.append(t)
+            continue
+        if line.startswith(("  - ", "  ")) and out and st:
+            # 목록의 하위 항목은 앞 항목에 붙인다. 문단 중이면 문단에 붙인다.
+            if buf:
+                buf.append(st)
+            else:
+                out[-1] += " " + clean_md(st)
+            continue
+        if st.startswith(("|", ">", "#")):
+            flush()
+            continue
+        buf.append(st)
+    flush()
+    return out[:limit]
+
+
+def split_cells(line):
+    """표 한 줄을 칸으로 쪼갠다. 이스케이프한 `\\|` 는 칸 구분이 아니다 (5차 19번)."""
+    s = line.strip().strip("|")
+    cells, buf, i = [], [], 0
+    while i < len(s):
+        if s[i] == "\\" and i + 1 < len(s) and s[i + 1] == "|":
+            buf.append("|")
+            i += 2
+            continue
+        if s[i] == "|":
+            cells.append("".join(buf).strip())
+            del buf[:]
+            i += 1
+            continue
+        buf.append(s[i])
+        i += 1
+    cells.append("".join(buf).strip())
+    return cells
 
 
 def first_table(text):
@@ -347,7 +458,7 @@ def first_table(text):
     for line in (text or "").splitlines():
         line = line.strip()
         if line.startswith("|"):
-            cells = [c.strip() for c in line.strip("|").split("|")]
+            cells = split_cells(line)
             if all(set(c) <= set("-: ") for c in cells):
                 continue
             rows.append([clean_md(c) for c in cells])
@@ -356,11 +467,16 @@ def first_table(text):
     return rows
 
 
-def metrics_from(text, limit=4):
-    """결과 표를 (지표, 전, 후) 로 읽어 핵심 숫자를 만든다. 표에 없는 값은 만들지 않는다."""
+def metrics_from(text, limit=8):
+    """결과 표를 (지표, 전, 후) 로 읽어 핵심 숫자를 만든다. 표에 없는 값은 만들지 않는다.
+
+    4열 이후는 버리지 않고 머리글과 짝지어 note 로 남긴다. 예전에는 4열만 note 로
+    쓰고 나머지를 버려서 가림 편향 표의 CI·개선 단위가 사라졌다 (5차 19번).
+    """
     rows = first_table(text)
     if len(rows) < 2:
         return []
+    head = rows[0]
     out = []
     for r in rows[1:]:
         if len(r) < 3 or not r[0]:
@@ -369,7 +485,13 @@ def metrics_from(text, limit=4):
         if not after:
             continue
         val = (before + " → " + after) if before and before != "—" else after
-        out.append({"label": r[0], "value": val, "note": r[3] if len(r) > 3 else ""})
+        extra = []
+        for i in range(3, len(r)):
+            if not r[i]:
+                continue
+            name = head[i] if i < len(head) else ""
+            extra.append(("%s %s" % (name, r[i])).strip())
+        out.append({"label": r[0], "value": val, "note": " · ".join(extra)})
         if len(out) >= limit:
             break
     return out
@@ -406,6 +528,7 @@ def build_projects(entries):
             "name": name, "org": "", "track": "", "period": "", "role": "", "stage": "",
             "headline": "", "summary": "", "plain": "", "chapters": [], "stack": [], "tags": [],
             "problem": [], "action": [], "result": [], "learned": [], "metrics": [],
+            "contribution": [], "limits": [],
             "main": None, "docs": [], "dates": [],
         }
 
@@ -423,7 +546,8 @@ def build_projects(entries):
         if e["category"] == "projects" and b["main"] is None:
             b["main"] = e["path"]
             for f in ("org", "track", "period", "role", "stage", "headline", "summary", "plain", "chapters",
-                      "problem", "action", "result", "learned", "metrics"):
+                      "problem", "action", "result", "learned", "metrics",
+                      "contribution", "limits"):
                 if e.get(f):
                     b[f] = e[f]
         else:

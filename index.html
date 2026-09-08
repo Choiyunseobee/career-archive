@@ -576,6 +576,10 @@
         '<div class="pcols">' +
           col('문제', p.problem) + col('한 일', p.action) +
           col('결과', p.result) + metricCol(p) +
+          // 내 기여는 선임·동료와의 구분이 적힌 자리다. 주장하지 않는 것은 제한이다.
+          // 둘 다 문서에는 있는데 카드에 없었다 (Codex 5차 18번).
+          col('내 기여', p.contribution) +
+          col('주장하지 않는 것', p.limits) +
           col('배운 것', p.learned) +
           (chapterChips(p) ? '<div class="pcol"><h4>연결된 교재 장</h4>' + chapterChips(p) + '</div>' : '') +
         '</div>' +
