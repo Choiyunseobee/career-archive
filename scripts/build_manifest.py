@@ -386,6 +386,15 @@ def main():
     # 첫 화면의 "연결된 교재 장" 칩이 번호를 제목으로 바꿀 때 쓴다.
     if isinstance(SITE.get("book"), dict) and SITE["book"].get("chapters"):
         site_out["book"] = SITE["book"]
+    # interview: 프로젝트에 대해 자주 받는 기술 질문과 답변. 표시 필드는 문자열이어야 한다.
+    iv = SITE.get("interview")
+    if isinstance(iv, dict) and isinstance(iv.get("items"), list):
+        ok = all(isinstance(i, dict) and isinstance(i.get("q"), str) and i.get("q")
+                 and isinstance(i.get("a"), str) and i.get("a") for i in iv["items"])
+        if ok:
+            site_out["interview"] = iv
+        else:
+            print("[!] site.json 의 interview 항목에 q/a 문자열이 빠졌습니다. 무시합니다.", file=sys.stderr)
     manifest = {
         "site": site_out,
         "sections": [{"key": k, "label": l, "description": d} for k, l, d in SECTIONS],

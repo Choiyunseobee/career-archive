@@ -160,6 +160,61 @@
   footer a{font-weight:500}
   [hidden]{display:none!important}
   .booklink{margin:18px 0 0;font-size:15px}
+  /* 개요 */
+  .ov-lede{font-size:17px;line-height:1.7;margin:0 0 24px;max-width:64ch}
+  .ov-h{font-size:13px;font-weight:600;letter-spacing:.04em;color:var(--muted);margin:26px 0 10px}
+  .tl{border-left:2px solid var(--border);margin:0;padding:0 0 0 18px;list-style:none}
+  .tl li{position:relative;padding:0 0 18px}
+  .tl li:last-child{padding-bottom:0}
+  .tl li::before{content:'';position:absolute;left:-25px;top:6px;width:10px;height:10px;
+    border-radius:50%;background:var(--surface);border:2px solid var(--control-border)}
+  .tl li.now::before{background:var(--accent);border-color:var(--accent)}
+  .tl .org{font-weight:600;font-size:15px}
+  .tl .when{font-size:13px;color:var(--muted);margin-left:6px;font-variant-numeric:tabular-nums}
+  .tl .what{font-size:14px;color:var(--muted);margin-top:3px}
+  .ov-tracks{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 4px}
+  .ov-tracks button{font:inherit;font-size:14px;background:var(--surface);color:var(--text);
+    border:1px solid var(--border);border-radius:8px;padding:8px 14px;cursor:pointer;text-align:left}
+  .ov-tracks button:hover{border-color:var(--accent);color:var(--accent)}
+  .ov-tracks b{font-size:18px;font-variant-numeric:tabular-nums;margin-right:6px}
+  /* 프로젝트 카드 격자 */
+  .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px;margin:0 0 8px}
+  button.pmini{display:block;width:100%;text-align:left;font:inherit;color:var(--text);cursor:pointer;
+    background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+  button.pmini:hover{border-color:var(--accent)}
+  button.pmini:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .pbadges{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}
+  .pbadges span{font-size:12px;border-radius:4px;padding:1px 7px;border:1px solid var(--border);color:var(--muted)}
+  .pbadges span.tk{border-color:transparent;background:var(--accent-soft);color:var(--accent);font-weight:600}
+  .pmini .nm{font-weight:600;font-size:17px;line-height:1.35}
+  .pmini .wh{font-size:13px;color:var(--muted);margin-top:4px}
+  .pmini .sm{font-size:14px;margin:9px 0 0;display:-webkit-box;-webkit-line-clamp:3;
+    -webkit-box-orient:vertical;overflow:hidden}
+  .pmini .mini-plain{font-size:13px;background:var(--accent-soft);border-radius:7px;padding:9px 11px;
+    margin-top:10px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .pmini .mini-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
+  .pmini .mini-tags span{font-size:12px;color:var(--muted);background:var(--surface2);border-radius:4px;padding:1px 6px}
+  .backlist{display:inline-block;margin:0 0 14px;font-size:14px;background:none;border:none;
+    color:var(--accent);cursor:pointer;font:inherit;padding:0}
+  .backlist:hover{text-decoration:underline}
+  /* 학력·자격 카드 */
+  /* 면접 문항 */
+  .ivwrap{max-width:74ch}
+  .ivcat{font-size:13px;font-weight:600;letter-spacing:.04em;color:var(--muted);margin:26px 0 10px}
+  details.ivq{border:1px solid var(--border);border-radius:9px;margin:0 0 9px;background:var(--surface);overflow:hidden}
+  details.ivq summary{cursor:pointer;padding:13px 15px;font-weight:500;list-style:none;line-height:1.5}
+  details.ivq summary::-webkit-details-marker{display:none}
+  details.ivq summary::before{content:'Q  ';color:var(--accent);font-weight:700}
+  details.ivq[open] summary{border-bottom:1px solid var(--border)}
+  details.ivq .iva{padding:13px 15px;white-space:pre-line;font-size:15px}
+  details.ivq .ivfu{margin:0 15px 13px;padding-top:10px;border-top:1px dashed var(--border);font-size:13px;color:var(--muted)}
+  details.ivq .ivfu b{color:var(--text);font-size:12px;display:block;margin-bottom:4px}
+  .credgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+  .credcard{border:1px solid var(--border);border-radius:9px;padding:13px 15px;background:var(--surface)}
+  .credcard .cn{font-weight:600;font-size:15px;line-height:1.4}
+  .credcard .co{font-size:13px;color:var(--muted);margin-top:3px}
+  .credcard .cw{font-size:12px;color:var(--muted);margin-top:6px;font-variant-numeric:tabular-nums}
+  .credcard .cd{font-size:13px;margin-top:7px}
   .pplain{background:var(--accent-soft);border-radius:8px;padding:11px 13px;margin:0 0 12px;font-size:14px}
   .pplain b{display:block;font-size:12px;color:var(--accent);margin-bottom:3px;letter-spacing:.03em}
   .pchap{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 14px}
@@ -195,9 +250,11 @@
 
   <p class="booklink"><a href="study.html">로봇 SW 이론 심화 교재 18장 &rsaquo;</a><span>기구학·제어부터 비전·학습까지. 쉬운 설명, 연습문제, 면접 문항 포함</span></p>
   <div class="modes">
-    <button class="mode" type="button" data-mode="projects" aria-pressed="true">프로젝트</button>
+    <button class="mode" type="button" data-mode="overview" aria-pressed="true">개요</button>
+    <button class="mode" type="button" data-mode="projects" aria-pressed="false">프로젝트</button>
     <button class="mode" type="button" data-mode="docs" aria-pressed="false">문서 전체</button>
     <button class="mode" type="button" data-mode="credentials" aria-pressed="false" id="mode-creds" hidden>학력 · 자격 · 교육</button>
+    <button class="mode" type="button" data-mode="interview" aria-pressed="false" id="mode-iv" hidden>면접 문항</button>
     <button class="mode" type="button" data-mode="glossary" aria-pressed="false" id="mode-gloss" hidden>용어 사전</button>
   </div>
 
@@ -213,9 +270,11 @@
   <div class="tagbar" id="tagbar" hidden></div>
   <div class="count" id="count"></div>
 
+  <div class="ov" id="overview" hidden></div>
   <div class="plist" id="plist"></div>
   <div class="grid" id="grid" hidden></div>
   <div class="creds" id="creds" hidden></div>
+  <div class="ivwrap" id="iv" hidden></div>
   <div class="gloss" id="gloss" hidden></div>
 
   <footer id="footer"></footer>
@@ -240,6 +299,10 @@
   var creds = document.getElementById('creds');
   var trackbar = document.getElementById('trackbar');
   var gloss = document.getElementById('gloss');
+  var overview = document.getElementById('overview');
+  var ivEl = document.getElementById('iv');
+  var IV = site.interview || {};
+  var IV_ITEMS = IV.items || [];
   var GLOSS = (site.glossary && site.glossary.terms) || [];
   // 이론 심화 교재 장 목록. build_textbook.py 가 site.json 에 써 넣는다.
   var BOOKINFO = site.book || {};
@@ -256,7 +319,7 @@
   var credsOpen = Object.create(null);
   var CRED_FOLD = 8;   // 이보다 많으면 접고 펼치기 버튼을 준다
   var sections = M.sections || [];
-  var state = { mode: 'projects', cat: 'all', tag: null, track: null, q: '', tagsOpen: false };
+  var state = { mode: 'overview', cat: 'all', tag: null, track: null, q: '', tagsOpen: false, open: null };
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
@@ -360,8 +423,9 @@
   // credentials 가 site.json 에 없으면 탭 자체를 두지 않는다.
   document.getElementById('mode-creds').hidden = CRED_GROUPS.length === 0;
   document.getElementById('mode-gloss').hidden = GLOSS.length === 0;
+  document.getElementById('mode-iv').hidden = IV_ITEMS.length === 0;
   Array.prototype.forEach.call(document.querySelectorAll('.mode'), function (b) {
-    b.onclick = function () { state.mode = b.dataset.mode; state.cat = 'all'; render(); };
+    b.onclick = function () { state.mode = b.dataset.mode; state.cat = 'all'; state.open = null; render(); };
   });
 
   function hay(o, extra) {
@@ -387,6 +451,82 @@
 
   // 카드: 제목·기간 → 역할·단계 → 성과 → 요약 → 기술 → 사례 읽기 → 관련 문서
   // 사례에서 이론으로 넘어가는 링크. 교재에 없는 번호는 버린다.
+  // 개요: 소속별 타임라인과 트랙 분포. 새 수치를 만들지 않고 이미 있는 문서에서만 센다.
+  function renderOverview() {
+    var tag = (site.hero && site.hero.tagline) || '';
+    var byOrg = Object.create(null);
+    projects.forEach(function (p) {
+      var k = p.org || '기타';
+      (byOrg[k] = byOrg[k] || []).push(p);
+    });
+    var order = (site.org_order || []).filter(function (o) { return byOrg[o]; });
+    Object.keys(byOrg).forEach(function (o) { if (order.indexOf(o) < 0) order.push(o); });
+
+    var html = tag ? '<p class="ov-lede">' + esc(tag) + '</p>' : '';
+    html += '<div class="ov-h">커리어 타임라인</div><ul class="tl">';
+    order.forEach(function (o) {
+      var items = byOrg[o];
+      var parts = o.split('·');
+      var name = parts[0].trim(), when = parts.slice(1).join('·').trim();
+      var now = /재직|진행/.test(o);
+      html += '<li' + (now ? ' class="now"' : '') + '><span class="org">' + esc(name) + '</span>' +
+              (when ? '<span class="when">' + esc(when) + '</span>' : '') +
+              '<div class="what">' + esc(items.map(function (p) { return p.name; }).join(' · ')) + '</div></li>';
+    });
+    html += '</ul>';
+
+    var cnt = Object.create(null);
+    projects.forEach(function (p) { if (p.track) cnt[p.track] = (cnt[p.track] || 0) + 1; });
+    var names = TRACK_ORDER.filter(function (t) { return cnt[t]; })
+      .concat(Object.keys(cnt).filter(function (t) { return TRACK_ORDER.indexOf(t) < 0; }).sort());
+    if (names.length) {
+      html += '<div class="ov-h">어떤 일을 해왔나</div><div class="ov-tracks">' +
+        names.map(function (t) {
+          return '<button type="button" data-ovtrack="' + esc(t) + '"><b>' + cnt[t] + '</b>' + esc(t) + '</button>';
+        }).join('') + '</div>';
+    }
+    overview.innerHTML = html;
+    Array.prototype.forEach.call(overview.querySelectorAll('[data-ovtrack]'), function (b) {
+      b.onclick = function () {
+        state.mode = 'projects'; state.track = b.dataset.ovtrack; state.open = null; render();
+      };
+    });
+  }
+
+  // 격자에 놓는 짧은 카드. 자세한 것은 눌러서 본다.
+  function projectMini(p) {
+    var badges = [];
+    if (p.track) badges.push('<span class="tk">' + esc(p.track) + '</span>');
+    if (p.stage) badges.push('<span>' + esc(p.stage) + '</span>');
+    var tags = (p.stack || []).slice(0, 5).map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('');
+    return '<button class="pmini" type="button" data-open="' + esc(p.name) + '">' +
+      (badges.length ? '<div class="pbadges">' + badges.join('') + '</div>' : '') +
+      '<div class="nm">' + esc(p.name) + '</div>' +
+      '<div class="wh">' + esc([p.org, p.period].filter(Boolean).join(' · ')) + '</div>' +
+      (p.summary ? '<p class="sm">' + esc(p.summary) + '</p>' : '') +
+      (p.plain ? '<div class="mini-plain">' + esc(p.plain) + '</div>' : '') +
+      (tags ? '<div class="mini-tags">' + tags + '</div>' : '') +
+    '</button>';
+  }
+
+  // 카드 클릭(상세 열기), 목록으로 돌아가기, 관련 문서 펼치기를 한 곳에서 묶는다.
+  function bindProjectEvents() {
+    Array.prototype.forEach.call(plist.querySelectorAll('[data-open]'), function (b) {
+      b.onclick = function () { state.open = b.dataset.open; render(); };
+    });
+    Array.prototype.forEach.call(plist.querySelectorAll('[data-back]'), function (b) {
+      b.onclick = function () { state.open = null; render(); };
+    });
+    Array.prototype.forEach.call(plist.querySelectorAll('[data-toggle]'), function (b) {
+      b.onclick = function () {
+        var el = document.getElementById('docs-' + b.dataset.toggle);
+        el.hidden = !el.hidden;
+        b.setAttribute('aria-expanded', String(!el.hidden));
+        b.textContent = el.hidden ? b.textContent.replace('접기', '보기') : b.textContent.replace('보기', '접기');
+      };
+    });
+  }
+
   function chapterChips(p) {
     var list = (p.chapters || []).filter(function (n) { return CHAPTERS[n]; });
     if (!list.length) return '';
@@ -412,7 +552,11 @@
              '<span class="d">' + esc(d.category_label) + ' · ' + esc(d.date) + '</span></a>';
     }).join('');
 
+    var badges = [];
+    if (p.track) badges.push('<span class="tk">' + esc(p.track) + '</span>');
+    if (p.stage) badges.push('<span>' + esc(p.stage) + '</span>');
     return '<div class="pcard">' +
+      (badges.length ? '<div class="pbadges">' + badges.join('') + '</div>' : '') +
       '<div class="phead"><h2 class="pname">' + esc(p.name) + '</h2>' +
         '<span class="pperiod">' + esc(p.period || '') + '</span></div>' +
       '<div class="pmeta">' + meta.join('') + '</div>' +
@@ -426,6 +570,19 @@
         (docs ? '<button class="btn" type="button" data-toggle="' + i + '" aria-expanded="false">관련 문서 ' + (p.docs || []).length + '건 보기</button>' : '') +
       '</div>' +
       (docs ? '<div class="docs" id="docs-' + i + '" hidden>' + docs + '</div>' : '') +
+    '</div>';
+  }
+
+  // 학력·자격·교육을 글 목록이 아니라 카드로 보여준다. 이름·기관·시기·설명이 한눈에 구분되게.
+  function credCard(it) {
+    var when = it.date || it.period || '';
+    var name = esc(it.name || '');
+    if (it.project) name = '<a href="' + href(it.project) + '">' + name + '</a>';
+    return '<div class="credcard">' +
+      '<div class="cn">' + name + '</div>' +
+      (it.org ? '<div class="co">' + esc(it.org) + '</div>' : '') +
+      (when ? '<div class="cw">' + esc(when) + '</div>' : '') +
+      (it.detail ? '<div class="cd">' + esc(it.detail) + '</div>' : '') +
     '</div>';
   }
 
@@ -450,7 +607,7 @@
       var shown = open ? items : items.slice(0, CRED_FOLD);
       return '<section>' +
         '<h3>' + esc(k) + '<span>' + items.length + '건</span></h3>' +
-        '<ul class="cred-list">' + shown.map(credRow).join('') + '</ul>' +
+        '<div class="credgrid">' + shown.map(credCard).join('') + '</div>' +
         (items.length > CRED_FOLD
           ? '<button class="cred-more" type="button" data-cred="' + esc(k) + '" aria-expanded="' + open + '">' +
             (open ? '접기' : '나머지 ' + (items.length - CRED_FOLD) + '건 더 보기') + '</button>'
@@ -475,23 +632,51 @@
     });
     tabs.hidden = state.mode !== 'docs';
 
+    var isOv = state.mode === 'overview';
     var isCred = state.mode === 'credentials';
+    var isIv = state.mode === 'interview';
     var isGloss = state.mode === 'glossary';
     var showTags = !isCred && !isGloss && tagNames.length > 0 && (state.mode === 'docs' || state.tagsOpen || !!state.tag);
     tagbar.hidden = !showTags;
-    tagtoggle.hidden = state.mode !== 'projects' || tagNames.length === 0;
+    tagtoggle.hidden = state.mode !== 'projects' || !!state.open || tagNames.length === 0;
     tagtoggle.setAttribute('aria-expanded', String(showTags));
     tagtoggle.textContent = (showTags ? '기술 태그 접기' : '기술 태그 보기') + ' (' + tagNames.length + ')';
     // 학력·자격·교육은 목록이 짧고 고정이라 검색·태그 필터를 걸지 않는다.
-    document.querySelector('.controls').hidden = isCred || isGloss;
-    trackbar.hidden = state.mode !== 'projects' || trackbar.childElementCount === 0;
+    document.querySelector('.controls').hidden = isCred || isGloss || isOv || isIv || !!state.open;
+    trackbar.hidden = state.mode !== 'projects' || !!state.open || trackbar.childElementCount === 0;
     Array.prototype.forEach.call(trackbar.querySelectorAll('button'), function (b) {
       b.setAttribute('aria-pressed', String((b.dataset.track || null) === (state.track || null)));
     });
     creds.hidden = !isCred;
     gloss.hidden = !isGloss;
+    overview.hidden = !isOv;
+    ivEl.hidden = !isIv;
 
-    if (isGloss) {
+    if (isIv) {
+      plist.hidden = true; grid.hidden = true;
+      document.getElementById('count').textContent = '문항 ' + IV_ITEMS.length + '개';
+      var cats = [], byCat = Object.create(null);
+      IV_ITEMS.forEach(function (it) {
+        var k = it.cat || '기타';
+        if (!byCat[k]) { byCat[k] = []; cats.push(k); }
+        byCat[k].push(it);
+      });
+      ivEl.innerHTML = (IV.note ? '<p class="cred-note">' + esc(IV.note) + '</p>' : '') +
+        cats.map(function (k) {
+          return '<div class="ivcat">' + esc(k) + '</div>' + byCat[k].map(function (it) {
+            return '<details class="ivq"><summary>' + esc(it.q) + '</summary>' +
+              '<div class="iva">' + esc(it.a) + '</div>' +
+              ((it.fu || []).length ? '<div class="ivfu"><b>이어서 받을 수 있는 질문</b>' +
+                 it.fu.map(function (f) { return esc(f); }).join('<br>') + '</div>' : '') +
+            '</details>';
+          }).join('');
+        }).join('');
+    } else if (isOv) {
+      plist.hidden = true; grid.hidden = true;
+      document.getElementById('count').textContent =
+        '프로젝트 ' + projects.length + '건 · 문서 ' + entries.length + '건';
+      renderOverview();
+    } else if (isGloss) {
       plist.hidden = true; grid.hidden = true;
       document.getElementById('count').textContent = '용어 ' + GLOSS.length + '개';
       gloss.innerHTML = (GLOSS_NOTE ? '<p class="cred-note">' + esc(GLOSS_NOTE) + '</p>' : '') +
@@ -508,6 +693,15 @@
     } else if (state.mode === 'projects') {
       grid.hidden = true; plist.hidden = false;
       var list = projects.filter(matchProject);
+      // 카드를 누른 상태면 그 프로젝트만 자세히 보여준다.
+      var opened = state.open ? projects.filter(function (p) { return p.name === state.open; })[0] : null;
+      if (opened) {
+        document.getElementById('count').textContent = '';
+        plist.innerHTML = '<button class="backlist" type="button" data-back="1">← 프로젝트 목록</button>' +
+          projectCard(opened, projects.indexOf(opened), false);
+        bindProjectEvents();
+        return;
+      }
       document.getElementById('count').textContent =
         '프로젝트 ' + list.length + '건' + (list.length !== projects.length ? ' / 전체 ' + projects.length + '건' : '');
       if (!list.length) {
@@ -522,19 +716,13 @@
         });
         plist.innerHTML = groups.map(function (g) {
           return '<h3 class="ogroup">' + esc(g.org) + ' <span>프로젝트 ' + g.items.length + '건</span></h3>' +
-                 g.items.map(function (p) { return projectCard(p, projects.indexOf(p), true); }).join('');
+                 '<div class="pgrid">' + g.items.map(projectMini).join('') + '</div>';
         }).join('');
       } else {
-        plist.innerHTML = list.map(function (p) { return projectCard(p, projects.indexOf(p), false); }).join('');
+        plist.innerHTML = '<div class="pgrid">' + list.map(projectMini).join('') + '</div>';
       }
-      Array.prototype.forEach.call(plist.querySelectorAll('[data-toggle]'), function (b) {
-        b.onclick = function () {
-          var el = document.getElementById('docs-' + b.dataset.toggle);
-          el.hidden = !el.hidden;
-          b.setAttribute('aria-expanded', String(!el.hidden));
-          b.textContent = el.hidden ? b.textContent.replace('접기', '보기') : b.textContent.replace('보기', '접기');
-        };
-      });
+      bindProjectEvents();
+      return;
     } else {
       plist.hidden = true; grid.hidden = false;
       var docs = entries.filter(matchDoc);
